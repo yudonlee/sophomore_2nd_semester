@@ -16,10 +16,10 @@ int main(){
   for(int i=0;i<m;i++){
     int rad=i;
     for(int j=i+1;j<n;j++){
-      if(input[j]<input[rad])
+      if(tmp[j]<tmp[rad])
 	rad=j;
     }
-    Swap(input[i],input[rad]);
+    Swap(tmp[i],tmp[rad]);
   }
   for(int j=0;j<n;j++)
     printf("%d\n",tmp[j]);
