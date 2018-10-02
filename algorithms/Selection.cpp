@@ -7,7 +7,12 @@ void Swap(int& A,int& B){
   A=B;
   B=t;
 }
-void SelectionSort(int* input,int n,int m){
+int main(){
+  int n,m;
+  scanf("%d %d",&n,&m);
+  int* tmp = new int[n];
+  for(int i=0;i<n;i++)
+    scanf("%d",&tmp[i]);
   for(int i=0;i<m;i++){
     int rad=i;
     for(int j=i+1;j<n;j++){
@@ -16,24 +21,6 @@ void SelectionSort(int* input,int n,int m){
     }
     Swap(input[i],input[rad]);
   }
-  
-  /*for(int i=m;i<n;i++){
-    int rad=i;
-    for(int j=i+1;j<n;j++){
-      if(input[j]<input[rad])
-	rad=j;
-    }
-    Swap(input[i],input[rad]);
-    }*/
-}
-
-int main(){
-  int n,m;
-  scanf("%d %d",&n,&m);
-  int* tmp = (int *)malloc(sizeof(int)*n);
-  for(int i=0;i<n;i++)
-    scanf("%d",&tmp[i]);
-  SelectionSort(tmp,n,m);
   for(int j=0;j<n;j++)
     printf("%d\n",tmp[j]);
   free(tmp);
