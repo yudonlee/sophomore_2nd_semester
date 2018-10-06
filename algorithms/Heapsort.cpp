@@ -20,11 +20,18 @@ void Heapify(int* arr,int size,int parent){
     }
   }
   else {
-    if (arr[l] > arr[r] &&arr[parent]<arr[l])
-      max = l;
-    else if(arr[r]>arr[l] && arr[parent]< arr[parent]<arr[r])
-      max =r;
+    if (arr[l] > arr[r]) {
+      if (arr[parent] < arr[l]) {
+	max = l;
+      }
+		}
+    else {
+      if (arr[parent] < arr[r]) {
+	max =r;
+      }
+    }
   }
+ 
   if (max != parent) {
     Swap(arr[max], arr[parent]);
     Heapify(arr,size ,max);
