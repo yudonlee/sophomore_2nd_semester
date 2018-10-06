@@ -46,7 +46,6 @@ void Build_MaxHeap(int* arr,int n){
 int main(){
   int tmp[100000];
   int n;
-  int count=0;
   Queue_size=0;
   while(true){
     scanf("%d",&n);
@@ -56,13 +55,13 @@ int main(){
       break;
     }
     if(n==1){
-      count++;
       Queue_size++;
       scanf("%d\n",&tmp[Queue_size]);
-      Heapify(tmp,Queue_size,Queue_size);
+      Build_MaxHeap(tmp,Queue_size);
     }
     else if(n==2){
-      printf("%d\n ",tmp[1]);
+      
+      printf("%d\n",tmp[1]);
       if(Queue_size>1)
 	Swap(tmp[1],tmp[Queue_size]);
       Queue_size--;
