@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #define Left(a)  2*a;
 #define Right(a) 2*a+1;
-int Queue_size;
 void Swap(int& a,int& b){
   int t;
   t=a;
@@ -46,7 +45,7 @@ void Build_MaxHeap(int* arr,int n){
 int main(){
   int tmp[100000];
   int n;
-  Queue_size=0;
+  int Queue_size;
   while(true){
     scanf("%d",&n);
     if(n==0){
@@ -71,7 +70,7 @@ int main(){
       int second,third;
       scanf("%d %d",&second,&third);
       tmp[second] = third;
-      Heapify(tmp,Queue_size,second);
+      Build_MaxHeap(tmp,Queue_size);
     }
     else
       return 0;
