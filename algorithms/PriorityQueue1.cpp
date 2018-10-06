@@ -45,7 +45,7 @@ void Build_MaxHeap(int* arr,int *m){
 int main(){
   int tmp[100000];
   int n;
-  int Queue_size;
+  int Queue_size=0;
   while(true){
     scanf("%d",&n);
     if(n==0){
