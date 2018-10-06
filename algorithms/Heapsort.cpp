@@ -48,7 +48,7 @@ int main(){
     scanf("%d",&tmp[i]);
   Heapsort(tmp,m,n);
   int *p = tmp+n-1;
-  while(p>=(tmp+n-4)){
+  while(p>=(tmp+n-m)){
     printf("%d ",*p--);
   }
   printf("\n");
