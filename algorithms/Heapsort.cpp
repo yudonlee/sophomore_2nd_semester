@@ -30,9 +30,10 @@ void Build_MaxHeap(int* arr,int n){
      Heapify(arr,n,j);
   }
 }
-void Heapsort(int* arr,int n){
+void Heapsort(int* arr,int m,int n){
   Build_MaxHeap(arr,n);
-  for (int i= n-1;i>0;i--){  
+  int j = n-m;
+  for (int i= n-1;i>j-1;i--){  
     Swap(arr[0],arr[i]);
     n--;
     Heapify(arr,n,0);
@@ -45,13 +46,16 @@ int main(){
   int* tmp = (int *)malloc(sizeof(int)*n);
   for(int i=0;i<n;i++)
     scanf("%d",&tmp[i]);
-  Heapsort(tmp,n);
+  Heapsort(tmp,m,n);
   int *p = tmp+n-1;
-  while(p>=tmp){
+  while(p>=(tmp+n-4)){
     printf("%d ",*p--);
-    if(*p==tmp[n-m-1])
-       printf("\n");
   }
+  printf("\n");
+  for(int i=0;i<n-m;i++)
+    printf("%d ",tmp[i]);
+  
+  printf("\n");
   free(tmp);
   return 0;
 }
