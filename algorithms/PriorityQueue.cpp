@@ -45,6 +45,8 @@ void Build_MaxHeap(int* arr,int n){
 }
 //Extract max num and Heapsort.
 void Extract(int* arr){
+  if(Queue_size<1)
+    return;
   Swap(arr[1],arr[Queue_size]);
   Queue_size--;
   Heapify(arr,Queue_size,1);
@@ -75,14 +77,13 @@ int main(){
       scanf("%d\n",&tmp[Queue_size]);
     }
     else if(n==2){
-      if(j++==0)
-	Build_MaxHeap(tmp,Queue_size);
       Extract(tmp);
     }
     else if(n==3){
       int second,third;
       scanf("%d %d",&second,&third);
       tmp[second] = third;
+      Build_MaxHeap(tmp,Queue_size);
     }
     else
       return 0;
