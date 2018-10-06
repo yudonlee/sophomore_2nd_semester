@@ -55,7 +55,6 @@ void Extract(int* arr){
 int main(){
   int tmp[100000];
   int n;
-  int j=0;
   int count=0;
   Queue_size=0;
   while(true){
@@ -69,7 +68,7 @@ int main(){
       for(int i=1;i<=Queue_size;i++)
 	printf("%d ",tmp[i]);
       printf("\n");
-      return 0;
+      break;
     }
     if(n==1){
       count++;
