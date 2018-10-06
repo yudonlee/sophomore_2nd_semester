@@ -1,4 +1,4 @@
-1 #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #define Left(a)  2*a;
 #define Right(a) 2*a+1;
