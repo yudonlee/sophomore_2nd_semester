@@ -1,4 +1,4 @@
-#include <stdio.h>
+1 #include <stdio.h>
 #include <stdlib.h>
 #define Left(a)  2*a;
 #define Right(a) 2*a+1;
@@ -71,7 +71,7 @@ int main(){
       int second,third;
       scanf("%d %d",&second,&third);
       tmp[second] = third;
-      Build_MaxHeap(tmp,Queue_size);
+      Heapify(tmp,Queue_size,second);
     }
     else
       return 0;
