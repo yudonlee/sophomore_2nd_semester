@@ -73,7 +73,6 @@ int main(){
       int parent,child;
       parent = second/2;
       child =second;
-      Heapify(tmp,Queue_size,child);
       while(parent>0){
 	if(tmp[parent]<tmp[child]){
 	  Swap(tmp[parent],tmp[child]);
@@ -82,6 +81,7 @@ int main(){
 	}
 	else break;
       }
+      Heapify(tmp,Queue_size,child);	    
     }
     else
       return 0;
