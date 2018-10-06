@@ -70,7 +70,18 @@ int main(){
       int second,third;
       scanf("%d %d",&second,&third);
       tmp[second] = third;
-      Build_MaxHeap(tmp,&Queue_size);
+      int parent,child;
+      parent = second/2;
+      child =second;
+      Heapify(tmp,Queue_size,child);
+      while(parent>0){
+	if(tmp[parent]<tmp[child]){
+	  Swap(tmp[parent],tmp[child]);
+	  parent /=2;
+	  child /=2;
+	}
+	else break;
+      }
     }
     else
       return 0;
