@@ -49,7 +49,6 @@ int main(){
     if(*p==tmp[n-m-1])
        printf("\n");
   }
-  printf("\n");
   free(tmp);
   return 0;
 }
