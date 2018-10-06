@@ -13,9 +13,11 @@ void Swap(int& a,int& b){
 void Heapify(int* arr,int n,int i){
   int l = Left(i);
   int r = Right(i);
-  int max = i;
+  int max =0;
   if(arr[max]<arr[l] && l<n)
     max = l;
+  else
+    max = i;
   if(arr[max]<arr[r] && r<n)
     max = r;
   if(max != i){
