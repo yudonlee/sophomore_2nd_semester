@@ -51,14 +51,8 @@ int main(){
   while(true){
     scanf("%d",&n);
     if(n==0){
-      int *p = tmp+count;
-      while(p>(tmp+Queue_size)){
-	printf("%d ",*p--);
-      }
-      printf("\n");
       for(int i=1;i<=Queue_size;i++)
 	printf("%d ",tmp[i]);
-      printf("\n");
       break;
     }
     if(n==1){
@@ -68,14 +62,11 @@ int main(){
       Heapify(tmp,Queue_size,Queue_size);
     }
     else if(n==2){
-      //      for(int i=1;i<Queue_size;i++)
-      //printf("before Extract max tmp[%d]: %d\n",i,tmp[i]);
+      printf("%d\n ",tmp[1]);
       if(Queue_size>1)
 	Swap(tmp[1],tmp[Queue_size]);
       Queue_size--;
       Heapify(tmp,Queue_size,1);
-      //for(int i=1;i<Queue_size;i++)
-      //printf("after Extract max tmp[%d]: %d\n",i,tmp[i]);
     }
     else if(n==3){
       int second,third;
