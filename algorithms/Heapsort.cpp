@@ -13,8 +13,8 @@ void Swap(int& a,int& b){
 void Heapify(int* arr,int n,int i){
   int l = Left(i);
   int r = Right(i);
-  int max =0;
-  if(arr[max]<arr[l] && l<n)
+  int max =i;
+  if(arr[i]<arr[l] && l<n)
     max = l;
   else
     max = i;
@@ -26,7 +26,7 @@ void Heapify(int* arr,int n,int i){
   }
 }
 void Build_MaxHeap(int* arr,int n){
-   for (int j=(n-1)/2;j>= 0;j--){
+  for (int j=n/2-1;j>= 0;j--){
      Heapify(arr,n,j);
   }
 }
@@ -34,7 +34,8 @@ void Heapsort(int* arr,int n){
   Build_MaxHeap(arr,n);
   for (int i= n-1;i>0;i--){  
     Swap(arr[0],arr[i]);
-    Heapify(arr,--n,0);
+    n--;
+    Heapify(arr,n,0);
     }
 }
 
