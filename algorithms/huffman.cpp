@@ -45,7 +45,7 @@ int main(){
 		printf("%d\n",S*count);
 		printf("%d\n",sum);
 	}
-
+	free(leaf);
 
 	return 0;
 }
