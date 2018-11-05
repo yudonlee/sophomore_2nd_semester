@@ -22,7 +22,7 @@ void order(Node* leaf,int height);
 int main(){
 	int N,S;
 	scanf("%d",&N);
-	Node* heap[30000];
+	Node* heap[300000];
 	Node* leaf = (Node*)malloc(sizeof(Node)*N);
 	for(int i=1;i<=N;i++){
 		scanf("%s",leaf[i].ch);
