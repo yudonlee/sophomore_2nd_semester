@@ -81,20 +81,20 @@ void huffman(Node** heap){
 	}
 }
 void min_Heapify(Node** heap,int parent){
-  int child,large;
+  int l,r,large;
   while (parent <= length / 2)
     {
-        child = parent * 2;
-        if (length >= child + 1)
-        {
-            if ((*heap[child + 1]).freq <= (*heap[child]).freq)
-                large = child + 1;
+		l = Left(parent);
+		large = l;
+		r = Right(parent);
+		if (length >= r){
+            if ((*heap[r]).freq <= (*heap[l]).freq)
+                large = r;
             else
-                large = child;
+                large = l;
         }
-        else
-        {
-            large = child;
+        else{
+            large = l;
         }
         if ((*heap[parent]).freq > (*heap[large]).freq)
         {
