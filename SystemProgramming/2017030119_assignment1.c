@@ -18,8 +18,10 @@ int main(int argc,char** argv){
 	}
 	else if(pid==0){
 		argv[argc] = (char*)0; //execv need NULL as last parameter.(reference Linux manpage)the list of argument must be terminated by NULL pointer.these string shall constitute the argument list availabe to the new process.so the list must be terminated by null Pointer. 
-		if(execv("/bin/ls",argv+1)<0)
+		if(execv("/bin/ls",argv+1)<0){
 			fprintf(stderr,"Error execution!\n");
+			exit(1);
+		}
 	}
 	else{	
 		wait(0); //wait for child process exit
