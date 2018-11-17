@@ -112,29 +112,29 @@ int open_or_create_db_file(const char* filename) {
 		new_table->fd = dbfile;
 		strcpy(new_table->name,filename);
 		file_read_page(table_index,0,(Page*)new_table->headerpage);
-    	return new_table->headerpage->table_id;
+    	return table_index;
 	}
 }
 
 int close_db_table(int table_id){
 	Buffer* buf;
-	buf = buffermgr->firstBuf->prevB;
+	buf = buffermgr.firstBuf->prevB;
 	//if logically last buffer's table_id is eqaul to table_id ,then free( firstBuf->prev) and firstBuf->prev  = lastBUf->prev
-	while(buf==buffermgr->firstBuf->prevB&& buf->table_id == table_id){
-		buffermgr->firstBuf->is_pinned=1;
+	while(buf==buffermgr.firstBuf->prevB&& buf->table_id == table_id){
+		buffermgr.firstBuf->is_pinned=1;
 		buf->prevB->is_pinned = 1;
 		buf->is_pinned =1;
 		if(buf->is_dirty == 1){
-			int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
-			lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
-    		write(fd2, (Page*)lastbuf, PAGE_SIZE);
+			int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+			lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
+    		write(fd2, (Page*)buf, PAGE_SIZE);
 		}
-		buffermgr->firstBuf->prevB = buf->prevB;
-		buffermgr->firstBuf->is_pinned =0;
+		buffermgr.firstBuf->prevB = buf->prevB;
+		buffermgr.firstBuf->is_pinned =0;
 		buf->prevB->is_pinned =0;
 		free(buf);
-		buffermgr->buf_used--;
-		buf = buffermgr->firstBuf->prevB;
+		buffermgr.buf_used--;
+		buf = buffermgr.firstBuf->prevB;
 	}
 	if(buf == NULL)
 		return 0;
@@ -155,7 +155,7 @@ int close_db_table(int table_id){
 		buf->buffermgr->firstBuf->prevB;
 	}*/
 	//then this buffer is not logically end of buffer.so if buffer's table_id is equal to table_id,then free the buffer and linked bufer->prev and bufer->next. 
-	while(buf != buffermgr->firstBuf){
+	while(buf != buffermgr.firstBuf){
 		Buffer* prevBuf = buf->prevB;
 		if(buf->table_id == table_id)
 		{
@@ -163,88 +163,88 @@ int close_db_table(int table_id){
 			buf->prevB->is_pinned=1;
 			buf->nextB->is_pinned=1;
 			if(buf->is_dirty == 1){
-				int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
-				lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
-    			write(fd2, (Page*)lastbuf, PAGE_SIZE);
+				int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+				lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
+    			write(fd2, (Page*)buf, PAGE_SIZE);
 			}
-			buf->prevB->nextB = buf->next;
+			buf->prevB->nextB = buf->nextB;
 			buf->nextB->prevB = buf->prevB;
 			buf->prevB->is_pinned=0;
 			buf->nextB->is_pinned=0;	
 			free(buf);
-			buffermgr->buf_used--;
+			buffermgr.buf_used--;
 		}
 		buf = prevBuf;
 	}
-	if(buf== buffermgr->firstBuf){
+	if(buf== buffermgr.firstBuf){
 		if(buf->table_id == table_id && buf->nextB !=NULL){
 			buf->is_pinned = 1;
 			buf->prevB->is_pinned = 1;
 			buf->nextB->is_pinned =1;
 			if(buf->is_dirty == 1){
-				int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
-				lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
-    			write(fd2, (Page*)lastbuf, PAGE_SIZE);
+				int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+				lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
+    			write(fd2, (Page*)buf, PAGE_SIZE);
 			}
-			buffermgr->firstBuf = buf->nextB;
-			buffer->nextB->prevB = buf->prevB;
-			buffermgr->firstBuf->is_pinned = 0;
-			buffermgr->firstBuf->prevB->is_pinned =0;
+			buffermgr.firstBuf = buf->nextB;
+			buf->nextB->prevB = buf->prevB;
+			buffermgr.firstBuf->is_pinned = 0;
+			buffermgr.firstBuf->prevB->is_pinned =0;
 			free(buf);
-			buffermgr->buf_used--;
+			buffermgr.buf_used--;
 		}
 		else if(buf->table_id ==table_id && buf->nextB ==NULL){
 			buf->is_pinned =1;
 			if(buf->is_dirty == 1){
-				int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
-				lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
-    			write(fd2, (Page*)lastbuf, PAGE_SIZE);
+				int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+				lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
+    			write(fd2, (Page*)buf, PAGE_SIZE);
 			}
 			free(buf);
-			buffermgr->buf_used--;
+			buffermgr.buf_used--;
 		}
 	}
 	return 0;
 }
 int shutdown_db(){
-	Buffer* buf = buffermgr->firstBuf->prevB
+	Buffer* buf = buffermgr.firstBuf->prevB;
 	Buffer* prevBuf;
-	while(buf!=buffermgr->firstBuf){
-		buffermgr->firstBuf->is_pinned =1;
+	while(buf!=buffermgr.firstBuf){
+		buffermgr.firstBuf->is_pinned =1;
 		buf->is_pinned=1;
-		buf->prevB=1;
+		buf->prevB->is_pinned=1;
 		if(buf->is_dirty==1){
-			int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
-			lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
-    		write(fd2, (Page*)lastbuf, PAGE_SIZE);
+			int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+			lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
+    		write(fd2, (Page*)buf, PAGE_SIZE);
 		}
-		prevBuf = buf->prev;
-		buffermgr->firstBuf->prevB = prevBuf;
-		buffermgr->firstBuf->is_pinned=0;
+		prevBuf = buf->prevB;
+		buffermgr.firstBuf->prevB = prevBuf;
+		buffermgr.firstBuf->is_pinned=0;
 		prevBuf->is_pinned=0;
 		free(buf);
-		buffermgr->buf_used--;
+		buffermgr.buf_used--;
 		buf = prevBuf;
 	}
-	if(buf==buffermgr->firstBuf){
+	if(buf==buffermgr.firstBuf){
 		buf->is_pinned=1;
 		if(buf->is_dirty==1){
-			int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
-			lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
-    		write(fd2, (Page*)lastbuf, PAGE_SIZE);
+			int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+			lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
+    		write(fd2, (Page*)buf, PAGE_SIZE);
 		}
 		free(buf);
-		buffermgr->buf_used--;
+		buffermgr.buf_used--;
 	}
 	else	
-		return -1// buf must be equal to buffermgr->firstBuf.
-	if(buffermgr->buf_used !=0)
+		return -1;// buf must be equal to buffermgr->firstBuf.
+	if(buffermgr.buf_used !=0)
 	{	fprintf(stderr,"shutdowndb but buf_used is not 0!\n");
 		return -1;
 	}
-	for(i=1;i<=10;i++){
-		if(tablemgr->table_list[i].fd>0)
-			close(tablemgr->table_list[i].fd);//close all already open file.
+	for(int i=1;i<=10;i++){
+		if(tablemgr.table_list[i].fd>0)
+			close(tablemgr.table_list[i].fd);//close all already open file.
 	}
 	return 0; //success 
 }
