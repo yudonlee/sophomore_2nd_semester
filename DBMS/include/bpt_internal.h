@@ -105,10 +105,10 @@ Buffer* find_buf(int table_id,pagenum_t page_num);
 int cut( int length );
 
 // DB initialization
-int init_db(int num_buf);
+/*int init_db(int num_buf);
 int open_or_create_db_file(const char* filename);
-void close_db_table(int table_id);
-
+int close_db_table(int table_id);
+*/
 // Insertion.
 void start_new_tree(int table_id,uint64_t key, const char* value);
 void insert_into_leaf(int table_id,LeafPage* leaf_node, uint64_t key, const char* value);
