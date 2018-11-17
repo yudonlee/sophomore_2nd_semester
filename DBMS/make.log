@@ -1,0 +1,158 @@
+src/db.c: In function ‘open_or_create_db_file’:
+src/db.c:101:34: error: ‘HeaderPage {aka struct _HeaderPage}’ has no member named ‘table_id’
+      return new_table->headerpage->table_id;
+                                  ^
+src/db.c:114:21: warning: passing argument 2 of ‘file_read_page’ makes integer from pointer without a cast [-Wint-conversion]
+   file_read_page(0, (Page*)new_table->headerpage,table_index);
+                     ^
+In file included from include/bpt_internal.h:65:0,
+                 from include/bpt.h:3,
+                 from src/db.c:1:
+include/file.h:176:6: note: expected ‘pagenum_t {aka long unsigned int}’ but argument is of type ‘Page * {aka struct _Page *}’
+ void file_read_page(int table_id,pagenum_t pagenum, Page* page);
+      ^
+src/db.c:114:50: warning: passing argument 3 of ‘file_read_page’ makes pointer from integer without a cast [-Wint-conversion]
+   file_read_page(0, (Page*)new_table->headerpage,table_index);
+                                                  ^
+In file included from include/bpt_internal.h:65:0,
+                 from include/bpt.h:3,
+                 from src/db.c:1:
+include/file.h:176:6: note: expected ‘Page * {aka struct _Page *}’ but argument is of type ‘int’
+ void file_read_page(int table_id,pagenum_t pagenum, Page* page);
+      ^
+src/db.c:115:34: error: ‘HeaderPage {aka struct _HeaderPage}’ has no member named ‘table_id’
+      return new_table->headerpage->table_id;
+                                  ^
+src/db.c: At top level:
+src/db.c:119:5: error: conflicting types for ‘close_db_table’
+ int close_db_table(int table_id){
+     ^
+In file included from include/bpt.h:3:0,
+                 from src/db.c:1:
+include/bpt_internal.h:110:6: note: previous declaration of ‘close_db_table’ was here
+ void close_db_table(int table_id);
+      ^
+src/db.c: In function ‘close_db_table’:
+src/db.c:121:17: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+  buf = buffermgr->firstBuf->prevB;
+                 ^
+src/db.c:123:22: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+  while(buf==buffermgr->firstBuf->prevB&& buf->table_id == table_id){
+                      ^
+src/db.c:124:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->firstBuf->is_pinned=1;
+            ^
+src/db.c:128:38: error: ‘lastBuf’ undeclared (first use in this function)
+    int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
+                                      ^
+src/db.c:128:38: note: each undeclared identifier is reported only once for each function it appears in
+In file included from include/bpt_internal.h:65:0,
+                 from include/bpt.h:3,
+                 from src/db.c:1:
+src/db.c:129:34: error: ‘page’ undeclared (first use in this function)
+    lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
+                                  ^
+include/file.h:22:39: note: in definition of macro ‘PAGENUM_TO_FILEOFF’
+ #define PAGENUM_TO_FILEOFF(pgnum)   ((pgnum) * PAGE_SIZE)
+                                       ^
+src/db.c:130:25: error: ‘lastbuf’ undeclared (first use in this function)
+       write(fd2, (Page*)lastbuf, PAGE_SIZE);
+                         ^
+src/db.c:132:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->firstBuf->prevB = buf->prevB;
+            ^
+src/db.c:133:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->firstBuf->is_pinned =0;
+            ^
+src/db.c:136:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->buf_used--;
+            ^
+src/db.c:137:18: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buf = buffermgr->firstBuf->prevB;
+                  ^
+src/db.c:158:24: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+  while(buf != buffermgr->firstBuf){
+                        ^
+src/db.c:170:27: error: ‘Buffer {aka struct Buffer}’ has no member named ‘next’
+    buf->prevB->nextB = buf->next;
+                           ^
+src/db.c:175:13: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+    buffermgr->buf_used--;
+             ^
+src/db.c:179:20: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+  if(buf== buffermgr->firstBuf){
+                    ^
+src/db.c:189:13: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+    buffermgr->firstBuf = buf->nextB;
+             ^
+src/db.c:190:4: error: ‘buffer’ undeclared (first use in this function)
+    buffer->nextB->prevB = buf->prevB;
+    ^
+src/db.c:191:13: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+    buffermgr->firstBuf->is_pinned = 0;
+             ^
+src/db.c:192:13: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+    buffermgr->firstBuf->prevB->is_pinned =0;
+             ^
+src/db.c:194:13: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+    buffermgr->buf_used--;
+             ^
+src/db.c:204:13: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+    buffermgr->buf_used--;
+             ^
+src/db.c: In function ‘shutdown_db’:
+src/db.c:210:25: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+  Buffer* buf = buffermgr->firstBuf->prevB
+                         ^
+src/db.c:211:2: error: expected ‘,’ or ‘;’ before ‘Buffer’
+  Buffer* prevBuf;
+  ^
+src/db.c:212:22: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+  while(buf!=buffermgr->firstBuf){
+                      ^
+src/db.c:213:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->firstBuf->is_pinned =1;
+            ^
+src/db.c:215:13: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+   buf->prevB=1;
+             ^
+src/db.c:217:38: error: ‘lastBuf’ undeclared (first use in this function)
+    int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
+                                      ^
+In file included from include/bpt_internal.h:65:0,
+                 from include/bpt.h:3,
+                 from src/db.c:1:
+src/db.c:218:34: error: ‘page’ undeclared (first use in this function)
+    lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
+                                  ^
+include/file.h:22:39: note: in definition of macro ‘PAGENUM_TO_FILEOFF’
+ #define PAGENUM_TO_FILEOFF(pgnum)   ((pgnum) * PAGE_SIZE)
+                                       ^
+src/db.c:219:25: error: ‘lastbuf’ undeclared (first use in this function)
+       write(fd2, (Page*)lastbuf, PAGE_SIZE);
+                         ^
+src/db.c:221:3: error: ‘prevBuf’ undeclared (first use in this function)
+   prevBuf = buf->prev;
+   ^
+src/db.c:221:16: error: ‘Buffer {aka struct Buffer}’ has no member named ‘prev’
+   prevBuf = buf->prev;
+                ^
+src/db.c:222:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->firstBuf->prevB = prevBuf;
+            ^
+src/db.c:223:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->firstBuf->is_pinned=0;
+            ^
+src/db.c:226:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->buf_used--;
+            ^
+src/db.c:229:19: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+  if(buf==buffermgr->firstBuf){
+                   ^
+src/db.c:237:12: error: invalid type argument of ‘->’ (have ‘BufferMgr {aka struct Buffermgr}’)
+   buffermgr->buf_used--;
+            ^
+src/db.c:241:2: error: expected ‘;’ before ‘if’
+  if(buffermgr->buf_used !=0)
+  ^
+make: *** [src/db.o] Error 1
