@@ -7,7 +7,8 @@
 #include <string.h>
 #include "file.h"
 #include "panic.h"
-#include "bpt_ext.h"
+#include "bpt_internal.h"
+
 
 // Expands file pages and prepends them to the free list
 
@@ -76,22 +77,22 @@ void file_write_page(Page* page) {
     write(dbfile, page, PAGE_SIZE);
 }
 */
-void expand_file(size_t cnt_page_to_expand,int table_id) {
-    off_t offset = tablemgr.table_list[table_id].num_pages * PAGE_SIZE;
+void expand_file(int table_id,size_t cnt_page_to_expand) {
+    off_t offset = tablemgr.table_list[table_id].headerpage->num_pages * PAGE_SIZE;
 
-    if (tablemgr.table_list->headerpage->num_pages > 1024 * 1024) {
+    if (tablemgr.table_list[table_id].headerpage->num_pages > 1024 * 1024) {
         // Test code: do not expand over than 4GB
         PANIC("Test: you are already having a DB file over than 4GB");
     }
     
     int i;
     for (i = 0; i < cnt_page_to_expand; i++) {
-        file_free_page(FILEOFF_TO_PAGENUM(offset),table_id);
-        tablemgr.table_list[table_id]->headerpage->num_pages++;
+        file_free_page(table_id,FILEOFF_TO_PAGENUM(offset));
+        tablemgr.table_list[table_id].headerpage->num_pages++;
         offset += PAGE_SIZE;
     }
 
-    file_write_page((Page*)tablemgr.table_list[table_id]->headerpage,table_id);
+    file_write_page(table_id,(Page*)tablemgr.table_list[table_id].headerpage);
 }
 
 // Gets a free page to use.
@@ -99,18 +100,18 @@ void expand_file(size_t cnt_page_to_expand,int table_id) {
 pagenum_t file_alloc_page(int table_id) {
     off_t freepage_offset;
     
-    freepage_offset = tablemgr.table_list[table_id]->headerpage->freelist;
+    freepage_offset = tablemgr.table_list[table_id].headerpage->freelist;
     if (freepage_offset == 0) {
         // No more free pages, expands the db file as twice
-        expand_file(tablemgr.table_list[table_id]->num_pages);
-        freepage_offset = tablemgr.table_list[table_id]->headerpage->freelist;
+        expand_file(table_id,tablemgr.table_list[table_id].headerpage->num_pages);
+        freepage_offset = tablemgr.table_list[table_id].headerpage->freelist;
     }
    
     FreePage freepage;
     file_read_page(table_id,FILEOFF_TO_PAGENUM(freepage_offset), (Page*)&freepage);
-    tablemgr.table_list[table_id]->headerpage->freelist = freepage.next;
+    tablemgr.table_list[table_id].headerpage->freelist = freepage.next;
     
-    file_write_page(table_id,(Page*)tablemgr.table_list[table_id]->headerpage,table_id);
+    file_write_page(table_id,(Page*)tablemgr.table_list[table_id].headerpage);
     
     return FILEOFF_TO_PAGENUM(freepage_offset);
 }
@@ -120,49 +121,49 @@ void file_free_page(int table_id,pagenum_t pagenum) {
     FreePage freepage;
     memset(&freepage, 0, PAGE_SIZE);
 
-    freepage.next = tablemgr.table_list[table_id]->headerpage->freelist;
+    freepage.next = tablemgr.table_list[table_id].headerpage->freelist;
     freepage.pagenum = pagenum;
-    file_write_page((Page*)&freepage,table_id);
+    file_write_page(table_id,(Page*)&freepage);
     
-    tablemgr.table_list[table_id]->headerpage->freelist = PAGENUM_TO_FILEOFF(pagenum);
+    tablemgr.table_list[table_id].headerpage->freelist = PAGENUM_TO_FILEOFF(pagenum);
 
-    file_write_page(table_id,(Page*)tablemgr.table_list[table_id]->headerpage);
+    file_write_page(table_id,(Page*)tablemgr.table_list[table_id].headerpage);
 }
 void file_read_page_to_buffer(int table_id,pagenum_t pagenum){
 	Buffer* tmp_buf = (Buffer*)malloc(sizeof(Buffer));
-	int fd2 = dup( tablemgr.table_list[table_id].fd ) 
+	int fd2 = dup( tablemgr.table_list[table_id].fd ); 
 	lseek(fd2, PAGENUM_TO_FILEOFF(pagenum), SEEK_SET);
    	read(fd2,tmp_buf,PAGE_SIZE);
 	tmp_buf->table_id = table_id;
 	tmp_buf->page_num = pagenum;
 	tmp_buf->is_dirty = 0;
 	tmp_buf->is_pinned = 1; //pinned is 1 because this is update circumstance
-	if(buffermgr->buf_used ==0){
-		buffermgr->firstBuf = tmp_buf;
+	if(buffermgr.buf_used ==0){
+		buffermgr.firstBuf = tmp_buf;
 		tmp_buf->nextB =NULL;
 		tmp_buf->prevB = tmp_buf;
-		buffermgr->buf_used++;
-		tmp->buf->is_pinned = 0;
-	}else if(buffermgr->buf_used < buffermgr->buf_order){
+		buffermgr.buf_used++;
+		tmp_buf->is_pinned = 0;
+	}else if(buffermgr.buf_used < buffermgr.buf_order){
 		//firstBuf and last Buf is pinned because they will be modicated in prev/nextB
-		buffermgr->firstBuf->is_pinned =1;
-		buffermgr->firstBuf->prevB->is_pinned =1; 
-		tmp_buf->prevB = buffermgr->firstBuf->prevB;
-		tmp_buf->nextB = buffermgr->firstBuf;
-		buffermgr->firstBuf->prevB = tmp_buf;
-		buffermgr->buf_used++;
+		buffermgr.firstBuf->is_pinned =1;
+		buffermgr.firstBuf->prevB->is_pinned =1; 
+		tmp_buf->prevB = buffermgr.firstBuf->prevB;
+		tmp_buf->nextB = buffermgr.firstBuf;
+		buffermgr.firstBuf->prevB = tmp_buf;
+		buffermgr.buf_used++;
 		tmp_buf->prevB->is_pinned=0;
 		tmp_buf->nextB->is_pinned=0;
 		tmp_buf->is_pinned=0;
-	}else if(buffermgr->buf_used == buffermgr->buf_order){
+	}else if(buffermgr.buf_used == buffermgr.buf_order){
 		drop_victim();
-		if(buffermgr->buf_used<buffermgr->buf_order){
-			buffermgr->firstBuf->is_pinned =1;
-			buffermgr->firstBuf->prevB->is_pinned =1; 
-			tmp_buf->prevB = buffermgr->firstBuf->prevB;
-			tmp_buf->nextB = buffermgr->firstBuf;
-			buffermgr->firstBuf->prevB = tmp_buf;
-			buffermgr->buf_used++;
+		if(buffermgr.buf_used < buffermgr.buf_order){
+			buffermgr.firstBuf->is_pinned =1;
+			buffermgr.firstBuf->prevB->is_pinned =1; 
+			tmp_buf->prevB = buffermgr.firstBuf->prevB;
+			tmp_buf->nextB = buffermgr.firstBuf;
+			buffermgr.firstBuf->prevB = tmp_buf;
+			buffermgr.buf_used++;
 			tmp_buf->prevB->is_pinned=0;
 			tmp_buf->nextB->is_pinned=0;
 			tmp_buf->is_pinned=0;
@@ -206,7 +207,7 @@ void file_write_page(int table_id,Page* page){
 		buf->prevB->is_pinned=0;
 		buf->nextB->is_pinned=0;
 		buf->is_pinned=0;
-		buffermgr->buf_used--;
+		buffermgr.buf_used--;
 		free(buf);
 		status = file_write_to_buffer(table_id,page);
 	}
@@ -226,7 +227,7 @@ void file_write_page(int table_id,Page* page){
 int file_write_to_buffer(int table_id,Page* page) {
     //build buffer pool to linked list;
 	//if buffer_used is 0,then create logically first buffer.
-	if(buffermgr->buf_used==0){
+	if(buffermgr.buf_used==0){
 		Buffer* buf = (Buffer*)malloc(sizeof(Buffer));
 		memcpy(page,buf,PAGE_SIZE);
 		buf->page_num = page->pagenum;
@@ -235,32 +236,32 @@ int file_write_to_buffer(int table_id,Page* page) {
 		buf->is_pinned =0;
 		buf->prevB = buf;
 		buf->nextB =NULL;
-		buffermgr->firstBuf=buf;
-		buffermgr->buf_used++;
+		buffermgr.firstBuf=buf;
+		buffermgr.buf_used++;
 	}
 	//if buffer_used is smaller than buf_order,we can make new buffer logically first buffer
 	//because of LRU policy latest used buffer must be the first buffer.
-	if(buffermgr->buf_used < buffermgr->buf_order){
+	if(buffermgr.buf_used < buffermgr.buf_order){
 	//the logical first Buf and last Buf need to be modified.so I want to pin up both of them.
-	buffermgr->firstBuf->prevB->is_pinned=1;
-	buffermgr->firstBuf->is_pinned=1;
+	buffermgr.firstBuf->prevB->is_pinned=1;
+	buffermgr.firstBuf->is_pinned=1;
 	Buffer* buf = (Buffer*)malloc(sizeof(Buffer));
 	memcpy(page,buf,PAGE_SIZE);
 	buf->page_num = page->pagenum;
 	buf->table_id = table_id;
 	buf->is_dirty = 1;
 	buf->is_pinned =1;
-	buf->prevB = buffermgr->firstBuf->prevB;
-	buffermgr->firstBuf->prevB = buf;
-	buf->nextB = buffermgr->firstBuf;
-	buffermgr->firstBuf->is_pinned=0;
+	buf->prevB = buffermgr.firstBuf->prevB;
+	buffermgr.firstBuf->prevB = buf;
+	buf->nextB = buffermgr.firstBuf;
+	buffermgr.firstBuf->is_pinned=0;
 	buf->prevB->is_pinned=0;
 	//buffermgr firstBuf is now buf;
-	buffermgr->firstBuf = buf;
+	buffermgr.firstBuf = buf;
 	buf->is_pinned=0;
-	buffermgr->buf_used++;
+	buffermgr.buf_used++;
 	}
-	else if(buffermgr->buf_used == buffermgr->buf_order){
+	else if(buffermgr.buf_used == buffermgr.buf_order){
 		int status = drop_victim(); //al
 		if(status ==0)
 			return file_write_to_buffer(table_id,page);	
@@ -276,7 +277,7 @@ int drop_victim(){
 		Buffer* lastBuf;
 		//duplicate filedescriptor using table_id ,struct table,struct tablelst;
 		//int fd2 = dup( tablemgr.table_list[table_id].fd ) 
-		lastBuf = buffermgr->firstBuf->prevB;	
+		lastBuf = buffermgr.firstBuf->prevB;	
 		while(lastBuf->is_pinned>0){
 			lastBuf = lastBuf->prevB;
 		//	lastBuf->nextB->prevB = lastBuf->prevB;// buffer frame flushed,(it does not logically end, lastBuf->prevB is equal to lastBuf->nextB->prevB 
@@ -296,7 +297,7 @@ int drop_victim(){
 			lastBuf->prevB->is_pinned=0;
 			/*buffermgr->firstBuf->prevB = lastBuf->prevB;
 			buffermgr->firstBuf->prevB->nextB = NULL;*/
-			buffermgr->buf_used--;
+			buffermgr.buf_used--;
 			/*buffermgr->firstbuf->prevB = lastBuf;
 			buffermgr->firstbuf->prevB= lastBuf;
 			lastBuf->nextB = NULL;*/
@@ -304,18 +305,18 @@ int drop_victim(){
 		//in this case,last buffer is LRU last buffer.(firstBuf->prevB)
 		else{
 			lastBuf->prevB->is_pinned++;
-			buffermgr->firstBuf->is_pinned++;
-			buffermgr->firstBuf->prevB = lastBuf->prevB;
-			lastBuf->prevb->nextB=NULL;
+			buffermgr.firstBuf->is_pinned++;
+			buffermgr.firstBuf->prevB = lastBuf->prevB;
+			lastBuf->prevB->nextB=NULL;
 			lastBuf->prevB->is_pinned=0;
-			buffermgr->firsBuf->is_pinned=0;	
-			buffermgr->buf_used--;
+			buffermgr.firstBuf->is_pinned=0;	
+			buffermgr.buf_used--;
 		}	
 		//if(lastBuf->is_pinned == 0){
 		if(lastBuf->is_dirty==1){
 			int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
-			lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
-    		write(fd2, (Page*)lastbuf, PAGE_SIZE);
+			lseek(fd2, PAGENUM_TO_FILEOFF(lastBuf->page_num), SEEK_SET);
+    		write(fd2, (Page*)lastBuf, PAGE_SIZE);
 		}
 		//buffermgr->firstBuf->prevB = lastBuf->prevB;
 		//buffermgr->firstBuf->prevB->nextB = NULL;

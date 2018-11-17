@@ -1,3 +1,36 @@
-src/file.c:10:21: fatal error: bpt_ext.h: No such file or directory
-compilation terminated.
+src/file.c: In function ‘expand_file’:
+src/file.c:81:20: error: ‘tablemgr’ undeclared (first use in this function)
+     off_t offset = tablemgr.table_list[table_id].headerpage->num_pages * PAGE_SIZE;
+                    ^
+src/file.c:81:20: note: each undeclared identifier is reported only once for each function it appears in
+src/file.c: In function ‘file_alloc_page’:
+src/file.c:103:23: error: ‘tablemgr’ undeclared (first use in this function)
+     freepage_offset = tablemgr.table_list[table_id].headerpage->freelist;
+                       ^
+src/file.c: In function ‘file_free_page’:
+src/file.c:124:21: error: ‘tablemgr’ undeclared (first use in this function)
+     freepage.next = tablemgr.table_list[table_id].headerpage->freelist;
+                     ^
+src/file.c: In function ‘file_read_page_to_buffer’:
+src/file.c:134:17: error: ‘tablemgr’ undeclared (first use in this function)
+  int fd2 = dup( tablemgr.table_list[table_id].fd ); 
+                 ^
+src/file.c:141:5: error: ‘buffermgr’ undeclared (first use in this function)
+  if(buffermgr.buf_used ==0){
+     ^
+src/file.c: In function ‘file_write_page’:
+src/file.c:210:3: error: ‘buffermgr’ undeclared (first use in this function)
+   buffermgr.buf_used--;
+   ^
+src/file.c: In function ‘file_write_to_buffer’:
+src/file.c:230:5: error: ‘buffermgr’ undeclared (first use in this function)
+  if(buffermgr.buf_used==0){
+     ^
+src/file.c: In function ‘drop_victim’:
+src/file.c:280:13: error: ‘buffermgr’ undeclared (first use in this function)
+   lastBuf = buffermgr.firstBuf->prevB; 
+             ^
+src/file.c:317:18: error: ‘tablemgr’ undeclared (first use in this function)
+    int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
+                  ^
 make: *** [src/file.o] Error 1
