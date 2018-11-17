@@ -7,5 +7,7 @@
  * than the number of keys. This global variable is initialized to the
  * default value.
  */
+//extern TableList tablemgr;
+//extern BufferMgr buffermgr;
 int order_internal = BPTREE_INTERNAL_ORDER;
 int order_leaf = BPTREE_LEAF_ORDER;

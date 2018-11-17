@@ -147,6 +147,8 @@ typedef struct Buffermgr{
 	int buf_used; //used buffer num.
 }BufferMgr;
 
+//extern TableList tablemgr;
+//extern BufferMgr buffermgr;
 // initialize db.
 int init_db(int num_buf);
 // Open a db file. Create a file if not exist.
