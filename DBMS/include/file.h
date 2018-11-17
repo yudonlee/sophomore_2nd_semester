@@ -153,7 +153,7 @@ int init_db(int num_buf);
 int open_or_create_db_table(const char* filename);
 
 // Close a db table
-void close_db_table(int table_id);
+int close_db_table(int table_id);
 
 // shutdown db
 int shutdown_db();
