@@ -1,4 +1,5 @@
 #include "bpt_internal.h"
+
 // Opens a db file. Creates a file if not exist.
 int open_table(const char* filename) {
     return open_or_create_db_file(filename);
@@ -24,7 +25,7 @@ int delete(int table_id,uint64_t key) {
 /* Finds a value from key in the b+ tree.
  */
 char* find(int table_id,uint64_t key) {
-    return find_record(table_id,key);
+	return find_record(table_id,key);	
 }
 
 /* Prints the B+ tree in the command
@@ -130,7 +131,6 @@ void print_license( int license_part ) {
 		start = LICENSE_WARRANTEE_START;
 		end = LICENSE_WARRANTEE_END;
 		break;
-	case LICENSE_CONDITIONS:
 		start = LICENSE_CONDITIONS_START;
 		end = LICENSE_CONDITIONS_END;
 		break;
@@ -175,4 +175,3 @@ void usage_2( void ) {
 	"\tq -- Quit. (Or use Ctl-D.)\n"
 	"\tb <table_name> -- used buffer number and buffer capacity\n");
 }
-

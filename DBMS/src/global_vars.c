@@ -1,5 +1,4 @@
 #include "bpt_internal.h"
-
 /* The order determines the maximum and minimum number of entries (keys and
  * pointers) in any node.  Every node has at most order - 1 keys and at least
  * (roughly speaking) half that number. Every leaf has as many pointers to

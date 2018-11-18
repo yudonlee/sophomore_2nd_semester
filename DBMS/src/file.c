@@ -7,8 +7,11 @@
 #include <string.h>
 #include "file.h"
 #include "panic.h"
+#include "file.h"
 #include "bpt_internal.h"
 
+BufferMgr buffermgr;
+TableList tablemgr;
 
 // Expands file pages and prepends them to the free list
 
