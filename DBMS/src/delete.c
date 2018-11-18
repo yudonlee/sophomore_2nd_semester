@@ -1,5 +1,7 @@
 #include "bpt_internal.h"
 #include "panic.h"
+BufferMgr buffermgr;
+TableList tablemgr;
 
 // DELETION.
 

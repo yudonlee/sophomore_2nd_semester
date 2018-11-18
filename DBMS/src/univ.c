@@ -1,10 +1,30 @@
 #include "bpt_internal.h"
-
+BufferMgr buffermgr;
+TableList tablemgr;
 /* Traces the path from the root to a leaf, searching
  * by key.  Displays information about the path
  * if the verbose flag is set.
  * Returns the leaf containing the given key.
  */
+
+Buffer* find_buf(int table_id,pagenum_t page_num){
+	Buffer* output;
+	output = buffermgr.firstBuf;
+	while(output != NULL){
+		if(output->table_id == table_id && output->page_num){
+			return output;
+		}
+		output = output->nextB;
+	}
+	if(output ==NULL){
+		int fd2 = dup( tablemgr.table_list[table_id].fd );
+		lseek(fd2, PAGENUM_TO_FILEOFF(page_num), SEEK_SET);
+    	read(fd2,output,PAGE_SIZE);
+		file_write_to_buffer(table_id,(Page*)output);
+	}
+	return NULL;
+}
+
 bool find_leaf(int table_id,uint64_t key, LeafPage* out_leaf_node) {
     int i = 0;
     off_t root_offset = tablemgr.table_list[table_id].headerpage->root_offset;

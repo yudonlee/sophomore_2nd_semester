@@ -1,7 +1,7 @@
 #include "bpt.h"
-#include "file.h"
-#include "bpt_internal.h"
 #include "panic.h"
+//extern TableList tablemgr;
+//extern BufferMgr buffermgr;
 //BufferMgr buffermgr; // buffermanager object 
 //TableList tablemgr; // tablemanager object
 // Opens a db file or creates a new file if not exist.
@@ -79,7 +79,6 @@ int open_or_create_db_file(const char* filename) {
 		for(int i=1;i<=10;i++){
 			if(tablemgr.table_list[i].fd <0){
 				table_index =i;
-				break; //for loop break
 			}
 		}
 		if(table_index==-1){
@@ -100,6 +99,7 @@ int open_or_create_db_file(const char* filename) {
         file_write_page(table_index,(Page*)new_table->headerpage); //&new_table->headerpage or new_table->headerpage
     	return table_index;
 	} else {
+		fprintf(stderr,"open error\n");
         // DB file exists. Loads header info
 		int table_index=-1;
 		for(int i=1;i<=10;i++){
@@ -108,7 +108,9 @@ int open_or_create_db_file(const char* filename) {
 		}
 		if(table_index==-1)
         	fprintf(stderr,"No seat for table_list.please close db more than 1\n");
+		printf("table index:%d\n",table_index);
 		Table* new_table = &tablemgr.table_list[table_index];
+		
 		new_table->fd = dbfile;
 		strcpy(new_table->name,filename);
 		file_read_page(table_index,0,(Page*)new_table->headerpage);

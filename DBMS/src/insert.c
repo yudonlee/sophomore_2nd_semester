@@ -1,6 +1,7 @@
 #include "bpt_internal.h"
 #include "panic.h"
-
+BufferMgr buffermgr;
+TableList tablemgr;
 /* Helper function used in insert_into_parent to find the index of the parent's
  * pointer to the node to the left of the key to be inserted.
  */
