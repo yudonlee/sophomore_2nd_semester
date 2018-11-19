@@ -63,6 +63,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "file.h"
+#include "panic.h"
 #ifdef WINDOWS
 #define bool char
 #define false 0
@@ -90,10 +91,12 @@
 // GLOBALS.
 extern int order_internal;
 extern int order_leaf;
-extern TableList tablemgr;
-extern BufferMgr buffermgr;
+//extern TableList tablemgr;
+//extern BufferMgr buffermgr;
 //extern HeaderPage dbheader;
 //extern int dbfile;
+extern BufferMgr buffermgr;
+extern TableList tablemgr;
 
 // FUNCTION PROTOTYPES.
 

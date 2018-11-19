@@ -151,8 +151,9 @@ typedef struct Buffermgr{
 //extern BufferMgr buffermgr;
 // initialize db.
 int init_db(int num_buf);
+void close_table(int table_id);
 // Open a db file. Create a file if not exist.
-int open_or_create_db_table(const char* filename);
+int open_or_create_db_file(const char* filename);
 
 // Close a db table
 int close_db_table(int table_id);
