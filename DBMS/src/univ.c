@@ -16,13 +16,13 @@ Buffer* find_buf(int table_id,pagenum_t page_num){
 		}
 		output = output->nextB;
 	}
-	if(output ==NULL){
+	/*if(output ==NULL){
 		int fd2 = dup( tablemgr.table_list[table_id].fd );
 		lseek(fd2, PAGENUM_TO_FILEOFF(page_num), SEEK_SET);
     	read(fd2,output,PAGE_SIZE);
 		file_write_to_buffer(table_id,(Page*)output);
-	}
-	return NULL;
+	}*/
+	return output;
 }
 
 bool find_leaf(int table_id,uint64_t key, LeafPage* out_leaf_node) {

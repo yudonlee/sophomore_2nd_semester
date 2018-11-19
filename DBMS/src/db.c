@@ -79,6 +79,7 @@ int open_or_create_db_file(const char* filename) {
 		for(int i=1;i<=10;i++){
 			if(tablemgr.table_list[i].fd <0){
 				table_index =i;
+				break;
 			}
 		}
 		if(table_index==-1){
@@ -89,26 +90,27 @@ int open_or_create_db_file(const char* filename) {
 		Table* new_table = &tablemgr.table_list[table_index];
 		new_table->fd = dbfile;
 		strcpy(new_table->name,filename);
-		new_table->headerpage = (HeaderPage*)malloc(sizeof(PAGE_SIZE));
+		new_table->headerpage = (HeaderPage*)malloc(sizeof(HeaderPage));
 		memset(new_table->headerpage, 0, PAGE_SIZE); //&new_table->headerpage or new_table->headerpage
         new_table->headerpage->freelist = 0;
         new_table->headerpage->root_offset = 0;
         new_table->headerpage->num_pages = 1;
         new_table->headerpage->pagenum = 0;
-		//new_table->table_id = table_index;   
-        file_write_page(table_index,(Page*)new_table->headerpage); //&new_table->headerpage or new_table->headerpage
+		//new_table->table_id = table_index; 
+		file_write_page(table_index,(Page*)new_table->headerpage); //&new_table->headerpage or new_table->headerpage
     	return table_index;
 	} else {
-		fprintf(stderr,"open error\n");
+		//fprintf(stderr,"open error\n");
         // DB file exists. Loads header info
 		int table_index=-1;
 		for(int i=1;i<=10;i++){
-			if(tablemgr.table_list[i].fd <0)
+			if(tablemgr.table_list[i].fd <0){
 				table_index =i;
+				break;
+			}
 		}
 		if(table_index==-1)
         	fprintf(stderr,"No seat for table_list.please close db more than 1\n");
-		printf("table index:%d\n",table_index);
 		Table* new_table = &tablemgr.table_list[table_index];
 		
 		new_table->fd = dbfile;

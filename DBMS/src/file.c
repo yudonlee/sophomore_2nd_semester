@@ -147,18 +147,20 @@ void file_read_page_to_buffer(int table_id,pagenum_t pagenum){
 		tmp_buf->prevB = tmp_buf;
 		buffermgr.buf_used++;
 		tmp_buf->is_pinned = 0;
-	}else if(buffermgr.buf_used < buffermgr.buf_order){
+	}
+	else if(buffermgr.buf_used < buffermgr.buf_order){
 		//firstBuf and last Buf is pinned because they will be modicated in prev/nextB
 		buffermgr.firstBuf->is_pinned =1;
-		buffermgr.firstBuf->prevB->is_pinned =1; 
+		//buffermgr.firstBuf->prevB->is_pinned =1; 
 		tmp_buf->prevB = buffermgr.firstBuf->prevB;
 		tmp_buf->nextB = buffermgr.firstBuf;
 		buffermgr.firstBuf->prevB = tmp_buf;
 		buffermgr.buf_used++;
-		tmp_buf->prevB->is_pinned=0;
+		//tmp_buf->prevB->is_pinned=0;
 		tmp_buf->nextB->is_pinned=0;
 		tmp_buf->is_pinned=0;
-	}else if(buffermgr.buf_used == buffermgr.buf_order){
+	}
+	else if(buffermgr.buf_used == buffermgr.buf_order){
 		drop_victim();
 		if(buffermgr.buf_used < buffermgr.buf_order){
 			buffermgr.firstBuf->is_pinned =1;
@@ -182,13 +184,18 @@ void file_read_page(int table_id,pagenum_t pagenum,Page* page) {
 	if(buf !=NULL){
 		memcpy(buf,page,PAGE_SIZE);
 	}
+	//it cannot exit in buffer.so we take a 2 case.
 	else{
 		file_read_page_to_buffer(table_id,pagenum);
 		buf = find_buf(table_id,pagenum);
 		if(buf!=NULL)
 			memcpy(buf,page,PAGE_SIZE);
 		else
-			fprintf(stderr,"buf is null after fille_read_page_to_buffer\n");
+			fprintf(stderr,"buf is null after file_read_page_to_buffer\n");
+		/*{//it does not exit in page.so we write page into  disk
+			file_write_page(table_id,page);
+		
+		}*/
 	}
 
 }
@@ -231,8 +238,9 @@ int file_write_to_buffer(int table_id,Page* page) {
     //build buffer pool to linked list;
 	//if buffer_used is 0,then create logically first buffer.
 	if(buffermgr.buf_used==0){
+		fprintf(stderr,"bufferm malloc error\n");
 		Buffer* buf = (Buffer*)malloc(sizeof(Buffer));
-		memcpy(page,buf,PAGE_SIZE);
+		memcpy(buf,page,PAGE_SIZE); //buf page change
 		buf->page_num = page->pagenum;
 		buf->table_id = table_id;
 		buf->is_dirty =1;
@@ -249,7 +257,7 @@ int file_write_to_buffer(int table_id,Page* page) {
 	buffermgr.firstBuf->prevB->is_pinned=1;
 	buffermgr.firstBuf->is_pinned=1;
 	Buffer* buf = (Buffer*)malloc(sizeof(Buffer));
-	memcpy(page,buf,PAGE_SIZE);
+	memcpy(buf,page,PAGE_SIZE);
 	buf->page_num = page->pagenum;
 	buf->table_id = table_id;
 	buf->is_dirty = 1;

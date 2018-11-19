@@ -1,7 +1,6 @@
 #ifndef __BPT_H__
 #define __BPT_H__
 #include "bpt_internal.h"
-#include "file.h"
 
 int open_table(const char* filename);
 int insert(int table_id,uint64_t key, const char* value);
