@@ -1,0 +1,10 @@
+#include "buffer.h"
+
+int find_table_id(char* table_name){
+	for(int i=1;i<=10;i++){
+		if(strcmp(tablemgr.table_list[i].name,table_name))
+			return 1; // success
+	}
+	return FAIL;
+
+}

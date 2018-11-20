@@ -1,60 +1,13 @@
-#include "bpt.h"
+#include "api.h"
 #include "panic.h"
-//extern TableList tablemgr;
-//extern BufferMgr buffermgr;
-//BufferMgr buffermgr; // buffermanager object 
-//TableList tablemgr; // tablemanager object
-// Opens a db file or creates a new file if not exist.
-/*
-int open_or_create_db_file(const char* filename) {
-    dbfile = open(filename, O_RDWR);
-    if (dbfile < 0) {
-        // Creates a new db file
-        dbfile = open(filename, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR);
-        if (dbfile < 0) {
-            PANIC("failed to create new db file");
-        }
-        
-        memset(&dbheader, 0, PAGE_SIZE);
-        dbheader.freelist = 0;
-        dbheader.root_offset = 0;
-        dbheader.num_pages = 1;
-        dbheader.pagenum = 0;
-        file_write_page((Page*)&dbheader);
-    } else {
-        // DB file exists. Loads header info
-        file_read_page(0, (Page*)&dbheader);
-        dbheader.pagenum = 0;
-    }
-    return 0;
-}
-*/
-// Closes the db file.
-int find_table_id(char* table_name){
-	for(int i=1;i<=10;i++){
-		if(strcmp(tablemgr.table_list[i].name,table_name))
-			return 1; // success
-	}
-	return FAIL;
 
-}
 int init_db(int num_buf){
 	buffermgr.buf_order = num_buf;
 	buffermgr.buf_used = 0;
-	//all fd is initialized -1.because when i open db, check for that free table.
 	for(int i=1;i<=10;i++){
 		tablemgr.table_list[i].fd = -1;
 	}
 	tablemgr.table_used =0; // there is no already open file .
-	//firstbuffer prevBuffer is Last BufferIndex.
-	/*new_buffer[0]->prevB = &new_buffer[num_buf-1];
-	new_buffer[0]->nextB = &new_buffer[1];	
-	// linked buffer pool
-	for(int i=1;i<num_buf;i++){
-		new_buffer[i]->prevB = &new_buffer[i-1];	
-		new_buffer[i]->nextB = &new_buffer[i+1];
-	}
-	*/
 	if(buffermgr.buf_used != num_buf){
 		for(int i=1;i<=10;i++){
 			if(tablemgr.table_list[i].fd!=-1)
@@ -72,9 +25,6 @@ int open_or_create_db_file(const char* filename) {
         if (dbfile < 0) {
             PANIC("failed to create new db file");
         }
-		/// create new table and record headerPage in table_id;
-    	//Table* new_table = (Table*)malloc(sizeof(Table));
-		/* find free table in table_list*/
 		int table_index=-1;
 		for(int i=1;i<=10;i++){
 			if(tablemgr.table_list[i].fd <0){
