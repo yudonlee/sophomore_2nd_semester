@@ -25,7 +25,7 @@ int delete(int table_id,uint64_t key) {
 /* Finds a value from key in the b+ tree.
  */
 char* find(int table_id,uint64_t key) {
-	return find_record(table_id,key);	
+    return find_record(table_id,key);
 }
 
 /* Prints the B+ tree in the command
