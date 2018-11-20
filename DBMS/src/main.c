@@ -49,7 +49,7 @@ int main( int argc, char ** argv ) {
 			table_id = find_table_id(table_name);
 			if(table_id != FAIL){
 				insert(table_id, input_key, input_value);
-				print_tree(table_id);
+				//print_tree(table_id);
 			}
 			break;
         case 'd':
@@ -57,7 +57,7 @@ int main( int argc, char ** argv ) {
 			table_id = find_table_id(table_name);
 			if(table_id != FAIL) {
 				delete(table_id, input_key);
-				print_tree(table_id);
+				//print_tree(table_id);
 			}
 			break;
 		case 'f':

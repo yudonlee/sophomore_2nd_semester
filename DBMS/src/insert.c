@@ -317,7 +317,6 @@ void start_new_tree(int table_id,uint64_t key, const char* value) {
     memcpy(LEAF_VALUE(&root_node, 0), value, SIZE_VALUE);
     
     file_write_page(table_id,(Page*)&root_node);
-
     tablemgr.table_list[table_id].headerpage->root_offset = PAGENUM_TO_FILEOFF(root_pagenum);
     file_write_page(table_id,(Page*)tablemgr.table_list[table_id].headerpage);
 }
@@ -343,7 +342,8 @@ int insert_record(int table_id,uint64_t key, const char* value) {
         return 0;
     }
 	
-    /* Case: the tree already exists. (Rest of function body.)
+    
+	/* Case: the tree already exists. (Rest of function body.)
 	 */
     LeafPage leaf_node;
     find_leaf(table_id,key, &leaf_node);
