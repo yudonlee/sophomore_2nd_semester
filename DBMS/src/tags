@@ -5,6 +5,8 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 adjust_root	delete.c	/^void adjust_root(int table_id) {$/;"	f
+buffer_read_to_page	file.c	/^void buffer_read_to_page(int table_id,pagenum_t pagenum){$/;"	f
+buffer_write_to_page	file.c	/^int buffer_write_to_page(){	$/;"	f
 buffermgr	delete.c	/^BufferMgr buffermgr;$/;"	v
 buffermgr	file.c	/^BufferMgr buffermgr;$/;"	v
 buffermgr	insert.c	/^BufferMgr buffermgr;$/;"	v
@@ -16,14 +18,11 @@ cut	univ.c	/^int cut( int length ) {$/;"	f
 delete	bpt_ext.c	/^int delete(int table_id,uint64_t key) {$/;"	f
 delete_entry	delete.c	/^void delete_entry(int table_id,NodePage* node_page, uint64_t key) {$/;"	f
 delete_record	delete.c	/^int delete_record(int table_id,uint64_t key) {$/;"	f
-drop_victim	file.c	/^int drop_victim(){	$/;"	f
 expand_file	file.c	/^void expand_file(int table_id,size_t cnt_page_to_expand) {$/;"	f
 file_alloc_page	file.c	/^pagenum_t file_alloc_page(int table_id) {$/;"	f
 file_free_page	file.c	/^void file_free_page(int table_id,pagenum_t pagenum) {$/;"	f
 file_read_page	file.c	/^void file_read_page(int table_id,pagenum_t pagenum,Page* page) {$/;"	f
-file_read_page_to_buffer	file.c	/^void file_read_page_to_buffer(int table_id,pagenum_t pagenum){$/;"	f
 file_write_page	file.c	/^void file_write_page(int table_id,Page* page){		$/;"	f
-file_write_to_buffer	file.c	/^int file_write_to_buffer(int table_id,Page* page) {$/;"	f
 find	bpt_ext.c	/^char* find(int table_id,uint64_t key) {$/;"	f
 find_and_print	bpt_ext.c	/^void find_and_print(int table_id,uint64_t key) {$/;"	f
 find_buf	univ.c	/^Buffer* find_buf(int table_id,pagenum_t page_num){$/;"	f
@@ -43,10 +42,12 @@ insert_into_parent	insert.c	/^void insert_into_parent(int table_id,NodePage* lef
 insert_record	insert.c	/^int insert_record(int table_id,uint64_t key, const char* value) {$/;"	f
 license_notice	bpt_ext.c	/^void license_notice( void ) {$/;"	f
 main	main.c	/^int main( int argc, char ** argv ) {$/;"	f
+memory_write_to_buffer	file.c	/^int memory_write_to_buffer(int table_id,Page* page) {$/;"	f
 open_or_create_db_file	db.c	/^int open_or_create_db_file(const char* filename) {$/;"	f
 open_table	bpt_ext.c	/^int open_table(const char* filename) {$/;"	f
 order_internal	global_vars.c	/^int order_internal = BPTREE_INTERNAL_ORDER;$/;"	v
 order_leaf	global_vars.c	/^int order_leaf = BPTREE_LEAF_ORDER;$/;"	v
+overwrite_buffer	file.c	/^int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page){$/;"	f
 print_license	bpt_ext.c	/^void print_license( int license_part ) {$/;"	f
 print_tree	bpt_ext.c	/^void print_tree(int table_id) {$/;"	f
 redistribute_nodes	delete.c	/^void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,$/;"	f

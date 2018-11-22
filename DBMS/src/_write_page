@@ -153,8 +153,6 @@ int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page){
 			tmp_buf->prevB->is_pinned=1;
 			buffermgr.firstBuf->prevB = tmp_buf->prevB;
 		}
-		else
-			free(buffermgr.firstBuf);
 		buffermgr.buf_used--;
 		free(tmp_buf);
 	}
