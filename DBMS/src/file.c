@@ -71,9 +71,8 @@ void file_free_page(int table_id,pagenum_t pagenum) {
 }
 void buffer_read_to_page(int table_id,pagenum_t pagenum){
 	//TODO: buffer_read_page must check! 
-	Buffer* find = find_buf(table_id,pagenum);
-	if(find !=NULL)
-		return;
+	//Buffer* find = find_buf(table_id,pagenum);
+	//if(find !=NULL) return;
 	Buffer* tmp_buf = (Buffer*)malloc(sizeof(Buffer));
 	int fd2 = tablemgr.table_list[table_id].fd; 
 	printf("fd2 is :%d\n",fd2);
@@ -89,23 +88,22 @@ void buffer_read_to_page(int table_id,pagenum_t pagenum){
 		tmp_buf->prevB = tmp_buf;
 		buffermgr.buf_used++;
 		tmp_buf->is_pinned = 0;
-		printf("tmp buf is well worked\n");
 		buffermgr.firstBuf = tmp_buf;
 	}
 	else if(buffermgr.buf_used < buffermgr.buf_order){
 		//firstBuf and last Buf is pinned because they will be modicated in prev/nextB
 		buffermgr.firstBuf->is_pinned =1;
-		//buffermgr.firstBuf->prevB->is_pinned =1; 
+		buffermgr.firstBuf->prevB->is_pinned =1; 
 		tmp_buf->prevB = buffermgr.firstBuf->prevB;
 		tmp_buf->nextB = buffermgr.firstBuf;
 		buffermgr.firstBuf->prevB = tmp_buf;
 		buffermgr.buf_used++;
-		//tmp_buf->prevB->is_pinned=0;
+		tmp_buf->prevB->is_pinned=0;
 		tmp_buf->nextB->is_pinned=0;
 		tmp_buf->is_pinned=0;
 	}
 	else if(buffermgr.buf_used == buffermgr.buf_order){
-		buffer_write_to_page();
+		buffer_write_to_page(); //flush.
 		if(buffermgr.buf_used < buffermgr.buf_order){
 			buffermgr.firstBuf->is_pinned =1;
 			buffermgr.firstBuf->prevB->is_pinned =1; 
@@ -150,16 +148,18 @@ int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page){
 	
 	if(tmp_buf->nextB ==NULL){
 		if(tmp_buf !=buffermgr.firstBuf){
+			buffermgr.firstBuf->is_pinned =1;
 			tmp_buf->prevB->is_pinned=1;
 			buffermgr.firstBuf->prevB = tmp_buf->prevB;
-			tmp_buf->prevB->nextB = tmp_buf; //new
+			tmp_buf->prevB->nextB = NULL; // whether or not tmp_buf is freed, NextBuffer must be deallocated because of the heap and system memory.
+			tmp_buf->prevB->is_pinned =0;
+			buffermgr.firstBuf->is_pinned=0;
 		}
 		else{
-			buffermgr.firstBuf =NULL;
+			buffermgr.firstBuf =NULL; //memory allocation problem.free does not always return NULL.
 		}
 		buffermgr.buf_used--;
 		free(tmp_buf); //FIXME
-		tmp_buf = NULL; //memory allocation problem.free does not always return NULL.
 	}
 	else{	
 		
@@ -171,8 +171,8 @@ int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page){
 			buffermgr.firstBuf->prevB = tmp_buf->prevB;
 		}
 		else{
-		tmp_buf->prevB->nextB = tmp_buf->nextB;
-		tmp_buf->nextB->prevB = tmp_buf->prevB;
+			tmp_buf->prevB->nextB = tmp_buf->nextB;
+			tmp_buf->nextB->prevB = tmp_buf->prevB;
 		}
 		tmp_buf->prevB->is_pinned=0;
 		tmp_buf->nextB->is_pinned=0;
@@ -264,10 +264,17 @@ int buffer_write_to_page(){
 		
 		//in this case, last buffer(evicted buffer) is not LRU last buffer.
 		if(lastBuf->nextB != NULL){
+			lastBuf->is_pinned =1;
 			lastBuf->nextB->is_pinned=1;
 			lastBuf->prevB->is_pinned=1;
-			lastBuf->prevB->nextB = lastBuf->nextB;
-			lastBuf->nextB->prevB = lastBuf->prevB;
+			if(lastBuf == buffermgr.firstBuf){
+				buffermgr.firstBuf = buffermgr.firstBuf->nextB;
+				buffermgr.firstBuf->nextB = lastBuf->nextB;
+			}
+			else{
+				lastBuf->prevB->nextB = lastBuf->nextB;
+				lastBuf->nextB->prevB = lastBuf->prevB;
+			}
 			lastBuf->nextB->is_pinned=0;
 			lastBuf->prevB->is_pinned=0;
 			/*buffermgr->firstBuf->prevB = lastBuf->prevB;
@@ -279,8 +286,9 @@ int buffer_write_to_page(){
 		}
 		//in this case,last buffer is LRU last buffer.(firstBuf->prevB)
 		else{
-			lastBuf->prevB->is_pinned++;
-			buffermgr.firstBuf->is_pinned++;
+			lastBuf->is_pinned =1;
+			lastBuf->prevB->is_pinned=1;
+			buffermgr.firstBuf->is_pinned=1;
 			buffermgr.firstBuf->prevB = lastBuf->prevB;
 			lastBuf->prevB->nextB=NULL;
 			lastBuf->prevB->is_pinned=0;
@@ -298,7 +306,7 @@ int buffer_write_to_page(){
 		//buffermgr->firstBuf->prevB->nextB = NULL;
 		//buffermgr->buf_used--;
 		//}
+		lastBuf->is_pinned = 0;
 		free(lastBuf);
-		lastBuf =NULL;
 		return 0;
 }
