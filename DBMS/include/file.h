@@ -4,8 +4,8 @@
 #include <stddef.h>
 #include <inttypes.h>
 
-#define BPTREE_INTERNAL_ORDER       4//249
-#define BPTREE_LEAF_ORDER           4//32
+#define BPTREE_INTERNAL_ORDER       249
+#define BPTREE_LEAF_ORDER           32
 
 #define FILENAME_MAX_LENGTH 256
 #define FAIL -1
@@ -170,6 +170,7 @@ pagenum_t file_alloc_page(int table_id);
 // Put free page to the free list in table_id(dbfile)
 void file_free_page(int table_id,pagenum_t pagenum);
 
+/*
 // Load file page into the in-memory page
 //update buffer-pool to read page
 //read in-memory page to buffer pool
@@ -182,7 +183,16 @@ void file_read_page(int table_id,pagenum_t pagenum, Page* page);
 void file_write_page(int table_id,Page* page);
 int file_write_to_buffer(int table_id,Page* page);
 int drop_victim(); //if there is no spac to evict buffer then return -1.success return 0.
-
+*/
 //extern HeaderPage dbheader;
 
+void buffer_read_to_page(int table_id,pagenum_t pagenum); 
+void memory_read_to_buffer(int table_id,pagenum_t pagenum,Page* page);
+void file_read_page(int table_id,pagenum_t pagenum, Page* page);
+
+// write page into the buffer or page
+void file_write_page(int table_id,Page* page);
+int memory_write_to_buffer(int table_id,Page* page);
+int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page);
+int buffer_write_to_page();
 #endif /* __FILE_H__  */
