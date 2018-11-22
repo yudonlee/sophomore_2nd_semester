@@ -152,9 +152,13 @@ int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page){
 		if(tmp_buf !=buffermgr.firstBuf){
 			tmp_buf->prevB->is_pinned=1;
 			buffermgr.firstBuf->prevB = tmp_buf->prevB;
+			tmp_buf->prevB->nextB = tmp_buf; //new
+		}
+		else{
+			buffermgr.firstBuf =NULL;
 		}
 		buffermgr.buf_used--;
-		free(tmp_buf);
+		free(tmp_buf); //FIXME
 		tmp_buf = NULL; //memory allocation problem.free does not always return NULL.
 	}
 	else{	
@@ -177,6 +181,7 @@ int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page){
 		free(tmp_buf);
 		tmp_buf =NULL; //FIXME
 	}
+	
 	return memory_write_to_buffer(table_id,page);
 }
 void file_write_page(int table_id,Page* page){		
