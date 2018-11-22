@@ -30,3 +30,5 @@ i pokemon 28 28
 i pokemon 29 29
 i pokemon 30 30
 i pokemon 31 31
+i pokemon 32 32
+i pokemon 33 33
