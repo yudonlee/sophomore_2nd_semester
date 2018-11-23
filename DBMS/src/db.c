@@ -75,7 +75,7 @@ int open_or_create_db_file(const char* filename) {
 		if(table_index==-1)
         	fprintf(stderr,"No seat for table_list.please close db more than 1\n");
 		Table* new_table = &tablemgr.table_list[table_index];
-		
+		new_table->headerpage = (HeaderPage*)malloc(sizeof(HeaderPage));//headerpage allocated.	
 		new_table->fd = dbfile;
 		strcpy(new_table->name,filename);
 		file_read_page(table_index,0,(Page*)new_table->headerpage);
@@ -92,20 +92,25 @@ int close_db_table(int table_id){
 		buf->prevB->is_pinned = 1;
 		buf->is_pinned =1;
 		if(buf->is_dirty == 1){
-			int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+			int fd2 = tablemgr.table_list[buf->table_id].fd;
 			lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
     		write(fd2, (Page*)buf, PAGE_SIZE);
 		}
 		buffermgr.firstBuf->prevB = buf->prevB;
+		buffermgr.firstBuf->prevB->nextB = NULL; //double pointer deallocation.
 		buffermgr.firstBuf->is_pinned =0;
 		buf->prevB->is_pinned =0;
 		free(buf);
 		buffermgr.buf_used--;
 		buf = buffermgr.firstBuf->prevB;
+		if(buffermgr.buf_used == 0){
+			buffermgr.firstBuf==NULL;
+			return 0;
+		}
 	}
-	if(buf == NULL)
+	/*if(buf == NULL)
 		return 0;
-
+	*/
 	//then this buffer is not logically end of buffer.so if buffer's table_id is equal to table_id,then free the buffer and linked bufer->prev and bufer->next. 
 	while(buf != buffermgr.firstBuf){
 		Buffer* prevBuf = buf->prevB;
@@ -115,7 +120,7 @@ int close_db_table(int table_id){
 			buf->prevB->is_pinned=1;
 			buf->nextB->is_pinned=1;
 			if(buf->is_dirty == 1){
-				int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+				int fd2 = tablemgr.table_list[buf->table_id].fd;
 				lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
     			write(fd2, (Page*)buf, PAGE_SIZE);
 			}
@@ -139,7 +144,7 @@ int close_db_table(int table_id){
     			write(fd2, (Page*)buf, PAGE_SIZE);
 			}
 			buffermgr.firstBuf = buf->nextB;
-			buf->nextB->prevB = buf->prevB;
+			buffermgr.firstBuf->prevB = buf->prevB;
 			buffermgr.firstBuf->is_pinned = 0;
 			buffermgr.firstBuf->prevB->is_pinned =0;
 			free(buf);
@@ -196,7 +201,7 @@ int shutdown_db(){
 	}
 	for(int i=1;i<=10;i++){
 		if(tablemgr.table_list[i].fd>0)
-			close(tablemgr.table_list[i].fd);//close all already open file.
+			close(tablemgr.table_list[i].fd);//close all already open file.this is no need.
 	}
 	return 0; //success 
 }

@@ -62,8 +62,8 @@ void file_free_page(int table_id,pagenum_t pagenum) {
     freepage.next = tablemgr.table_list[table_id].headerpage->freelist;
     freepage.pagenum = pagenum;
 	//write_file_free_page_memory_direct_to_disk
-	int fd2 = dup(tablemgr.table_list[table_id].fd);
-	lseek(fd2, freepage.pagenum, SEEK_SET);
+	int fd2 = tablemgr.table_list[table_id].fd;
+	lseek(fd2, PAGENUM_TO_FILEOFF(freepage.pagenum), SEEK_SET);
     write(fd2,(Page*)&freepage, PAGE_SIZE);
     
     tablemgr.table_list[table_id].headerpage->freelist = PAGENUM_TO_FILEOFF(pagenum);
@@ -140,7 +140,7 @@ void file_read_page(int table_id,pagenum_t pagenum,Page* page) {
 		
 		}*/
 	}
-
+	page->pagenum = pagenum; //FIXME
 }
 
 int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page){
