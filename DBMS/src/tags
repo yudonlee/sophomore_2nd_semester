@@ -21,6 +21,7 @@ delete_record	delete.c	/^int delete_record(int table_id,uint64_t key) {$/;"	f
 expand_file	file.c	/^void expand_file(int table_id,size_t cnt_page_to_expand) {$/;"	f
 file_alloc_page	file.c	/^pagenum_t file_alloc_page(int table_id) {$/;"	f
 file_free_page	file.c	/^void file_free_page(int table_id,pagenum_t pagenum) {$/;"	f
+file_read_headerpage	file.c	/^void file_read_headerpage(pagenum_t pagenum,Page* page){$/;"	f
 file_read_page	file.c	/^void file_read_page(int table_id,pagenum_t pagenum,Page* page) {$/;"	f
 file_write_page	file.c	/^void file_write_page(int table_id,Page* page){		$/;"	f
 find	bpt_ext.c	/^char* find(int table_id,uint64_t key) {$/;"	f
