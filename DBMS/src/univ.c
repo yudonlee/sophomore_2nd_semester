@@ -13,9 +13,9 @@ Buffer* find_buf(int table_id,pagenum_t page_num){
 	while(output !=NULL){
 		//TODO:while loop cannnot escape.
 		if(output->table_id == table_id && output->page_num == page_num){
-			printf("find_buf if statement checking\n");
+			//printf("find_buf if statement checking\n");
 			break;
-			printf("if statement does not work! break doenst work\n");
+			//printf("if statement does not work! break doenst work\n");
 		}
 		output = output->nextB;
 	}

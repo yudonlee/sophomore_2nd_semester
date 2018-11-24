@@ -185,7 +185,7 @@ int file_write_to_buffer(int table_id,Page* page);
 int drop_victim(); //if there is no spac to evict buffer then return -1.success return 0.
 */
 //extern HeaderPage dbheader;
-
+void file_read_headerpage(int table_id,pagenum_t pagenum);
 void buffer_read_to_page(int table_id,pagenum_t pagenum); 
 void memory_read_to_buffer(int table_id,pagenum_t pagenum,Page* page);
 void file_read_page(int table_id,pagenum_t pagenum, Page* page);

@@ -98,6 +98,7 @@ void buffer_read_to_page(int table_id,pagenum_t pagenum){
 		tmp_buf->nextB = buffermgr.firstBuf;
 		buffermgr.firstBuf->prevB = tmp_buf;
 		buffermgr.buf_used++;
+		buffermgr.firstBuf = tmp_buf;
 		tmp_buf->prevB->is_pinned=0;
 		tmp_buf->nextB->is_pinned=0;
 		tmp_buf->is_pinned=0;
@@ -119,6 +120,35 @@ void buffer_read_to_page(int table_id,pagenum_t pagenum){
 			fprintf(stderr,"drop_victim error\n");
 	}
 
+}
+void file_read_headerpage(int table_id,pagenum_t pagenum){
+	Buffer* tmp_buf = (Buffer*)malloc(sizeof(Buffer));
+	int fd2 = tablemgr.table_list[table_id].fd; 
+	lseek(fd2, PAGENUM_TO_FILEOFF(pagenum), SEEK_SET);
+   	read(fd2,(Page*)tmp_buf,PAGE_SIZE);
+	tmp_buf->table_id = table_id;
+	tmp_buf->page_num = pagenum;
+	tmp_buf->is_dirty = 0;
+	tmp_buf->is_pinned =1;
+	if(buffermgr.buf_used == 0){
+		buffermgr.firstBuf = tmp_buf;
+		tmp_buf->prevB = tmp_buf;
+		tmp_buf ->nextB = NULL;
+		tmp_buf->is_pinned =0;
+		buffermgr.buf_used++;
+	}
+	else{
+		buffermgr.firstBuf->is_pinned = 1;
+		buffermgr.firstBuf->prevB->is_pinned =1;
+		tmp_buf->nextB = buffermgr.firstBuf;
+		tmp_buf->prevB = buffermgr.firstBuf->prevB;
+		buffermgr.firstBuf->prevB = tmp_buf;
+		buffermgr.firstBuf= tmp_buf;
+		tmp_buf->is_pinned =0;
+		tmp_buf->nextB->is_pinned =0;
+		tmp_buf->prevB->is_pinned =0;
+		buffermgr.buf_used++;
+	}
 }
 //read only buffer in memory page
 void file_read_page(int table_id,pagenum_t pagenum,Page* page) {
