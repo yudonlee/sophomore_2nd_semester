@@ -4,8 +4,8 @@
 // Closes the db file.
 int find_table_id(char* table_name){
 	for(int i=1;i<=10;i++){
-		if(strcmp(tablemgr.table_list[i].name,table_name))
-			return 1; // success
+		if(strcmp(tablemgr.table_list[i].name,table_name)==0)
+			return i; // success
 	}
 	return FAIL;
 
@@ -77,6 +77,7 @@ int open_or_create_db_file(const char* filename) {
 		Table* new_table = &tablemgr.table_list[table_index];
 		new_table->headerpage = (HeaderPage*)malloc(sizeof(HeaderPage));//headerpage allocated.	
 		new_table->fd = dbfile;
+		strcpy(new_table->name,filename);
 		file_read_headerpage(table_index,0);
     	file_read_page(table_index,0,(Page*)new_table->headerpage);
 		return table_index;
@@ -235,6 +236,27 @@ int close_db_table(int table_id){
 	} */
 }
 int shutdown_db(){
+	/*Buffer* buf;
+	buf = buffermgr.firstBuf;
+	while(buf != NULL){
+		if(buf->is_dirty == 1){
+			int fd2 = dup(tablemgr.table_list[buf->table_id].fd);
+			lseek(fd2, PAGENUM_TO_FILEOFF(buf->page_num), SEEK_SET);
+    		write(fd2, (Page*)buf, PAGE_SIZE);
+		}
+		buf= buf->nextB;
+	}
+	else	
+		return -1;// buf must be equal to buffermgr->firstBuf.
+	if(buffermgr.buf_used !=0)
+	{	fprintf(stderr,"shutdowndb but buf_used is not 0!\n");
+		return -1;
+	}
+	for(int i=1;i<=10;i++){
+		if(tablemgr.table_list[i].fd>0)
+			close(tablemgr.table_list[i].fd);//close all already open file.this is no need.
+	}
+	return 0; //success */
 	Buffer* buf = buffermgr.firstBuf->prevB;
 	Buffer* prevBuf;
 	while(buf!=buffermgr.firstBuf){
@@ -275,4 +297,5 @@ int shutdown_db(){
 			close(tablemgr.table_list[i].fd);//close all already open file.this is no need.
 	}
 	return 0; //success 
+	
 }
