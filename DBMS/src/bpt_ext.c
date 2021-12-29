@@ -165,7 +165,7 @@ void usage_1( void ) {
 void usage_2( void ) {
 	printf("Enter any of the following commands after the prompt > :\n"
 	"\to <table_name> -- insert <table_name> if you want to open file\n"
-	"\tc <table_name> -- insert <table_name> if you want to close file" 
+	"\tc <table_name> -- insert <table_name> if you want to close file\n" 
 	"\ti <table_name> <key> <value> -- Insert <table_name> <key> <value> to input B+ tree) in file.\n"
 	"\td <table_name> <key>  -- Delete key in file.\n"
 	"\tf <k>  -- Find the value under key <k>.\n"

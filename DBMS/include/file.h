@@ -4,8 +4,8 @@
 #include <stddef.h>
 #include <inttypes.h>
 
-#define BPTREE_INTERNAL_ORDER       4//249
-#define BPTREE_LEAF_ORDER           4//32
+#define BPTREE_INTERNAL_ORDER       249
+#define BPTREE_LEAF_ORDER           32
 
 #define FILENAME_MAX_LENGTH 256
 #define FAIL -1

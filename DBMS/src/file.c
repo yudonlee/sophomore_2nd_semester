@@ -75,7 +75,7 @@ void buffer_read_to_page(int table_id,pagenum_t pagenum){
 	//if(find !=NULL) return;
 	Buffer* tmp_buf = (Buffer*)malloc(sizeof(Buffer));
 	int fd2 = tablemgr.table_list[table_id].fd; 
-	printf("fd2 is :%d\n",fd2);
+	//printf("fd2 is :%d\n",fd2);
 	lseek(fd2, PAGENUM_TO_FILEOFF(pagenum), SEEK_SET);
    	read(fd2,(Page*)tmp_buf,PAGE_SIZE);
 	
