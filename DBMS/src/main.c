@@ -50,7 +50,6 @@ int main( int argc, char ** argv ) {
 			if(table_id != FAIL){
 				insert(table_id, input_key, input_value);
 				print_tree(table_id);
-			printf("key: %jd\n",input_key);
 			}
 			break;
         case 'd':
