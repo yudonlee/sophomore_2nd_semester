@@ -6,26 +6,26 @@ int open_table(const char* filename) {
 }
 
 // Closes the db file.
-void close_table(int table_id) {
-    close_db_table(table_id);
+void close_db() {
+    close_db_file(dbfile);
 }
 
 /* Inserts a new record.
  */
-int insert(int table_id,uint64_t key, const char* value) {
-    return insert_record(table_id,key, value);
+int insert(uint64_t key, const char* value) {
+    return insert_record(key, value);
 }
 
 /* Deletes a record.
  */
-int delete(int table_id,uint64_t key) {
-    return delete_record(table_id,key);
+int delete(uint64_t key) {
+    return delete_record(key);
 }
 
 /* Finds a value from key in the b+ tree.
  */
-char* find(int table_id,uint64_t key) {
-    return find_record(table_id,key);
+char* find(uint64_t key) {
+    return find_record(key);
 }
 
 /* Prints the B+ tree in the command
@@ -37,19 +37,19 @@ char* find(int table_id,uint64_t key) {
  * to the keys also appear next to their respective
  * keys, in hexadecimal notation.
  */
-void print_tree(int table_id) {
+void print_tree() {
     off_t *queue;
     int i;
     int front = 0;
     int rear = 0;
 
-    if (tablemgr.table_list[table_id].headerpage->root_offset == 0) {
+    if (dbheader.root_offset == 0) {
 		printf("Empty tree.\n");
         return;
     }
     queue = (off_t*)malloc(sizeof(off_t) * BPTREE_MAX_NODE);
 
-    queue[rear] = tablemgr.table_list[table_id].headerpage->root_offset;
+    queue[rear] = dbheader.root_offset;
     rear++;
     queue[rear] = 0;
     rear++;
@@ -69,7 +69,7 @@ void print_tree(int table_id) {
         }
         
         NodePage node_page;
-        file_read_page(table_id,FILEOFF_TO_PAGENUM(page_offset), (Page*)&node_page);
+        file_read_page(FILEOFF_TO_PAGENUM(page_offset), (Page*)&node_page);
         if (node_page.is_leaf == 1) {
             // leaf node
             LeafPage* leaf_node = (LeafPage*)&node_page;
@@ -96,9 +96,9 @@ void print_tree(int table_id) {
 /* Finds the record under a given key and prints an
  * appropriate message to stdout.
  */
-void find_and_print(int table_id,uint64_t key) {
+void find_and_print(uint64_t key) {
     char* value_found = NULL;
-	value_found = find(table_id,key);
+	value_found = find(key);
 	if (value_found == NULL) {
 		printf("Record not found under key %" PRIu64 ".\n", key);
     }
@@ -131,6 +131,7 @@ void print_license( int license_part ) {
 		start = LICENSE_WARRANTEE_START;
 		end = LICENSE_WARRANTEE_END;
 		break;
+	case LICENSE_CONDITIONS:
 		start = LICENSE_CONDITIONS_START;
 		end = LICENSE_CONDITIONS_END;
 		break;
@@ -164,14 +165,13 @@ void usage_1( void ) {
  */
 void usage_2( void ) {
 	printf("Enter any of the following commands after the prompt > :\n"
-	"\to <table_name> -- insert <table_name> if you want to open file\n"
-	"\tc <table_name> -- insert <table_name> if you want to close file\n" 
-	"\ti <table_name> <key> <value> -- Insert <table_name> <key> <value> to input B+ tree) in file.\n"
-	"\td <table_name> <key>  -- Delete key in file.\n"
+	"\ti <k>  -- Insert <k> (an integer) as both key and value).\n"
 	"\tf <k>  -- Find the value under key <k>.\n"
-	"\tp <table_name> <key> -- Print the path from the root to key k and its associated in file"
+	"\tp <k> -- Print the path from the root to key k and its associated "
            "value.\n"
-	"\tt <table_name> -- Print the B+ tree.\n"
+	"\td <k>  -- Delete key <k> and its associated value.\n"
+	"\tt -- Print the B+ tree.\n"
 	"\tq -- Quit. (Or use Ctl-D.)\n"
-	"\tb <table_name> -- used buffer number and buffer capacity\n");
+	"\t? -- Print this help message.\n");
 }
+

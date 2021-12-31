@@ -1,0 +1,29 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+Buffer	bpt_internal.h	/^}Buffer;$/;"	t	typeref:struct:buffer
+IS_DELAYED_MERGE	bpt_internal.h	79;"	d
+LICENSE_CONDITIONS	bpt_internal.h	86;"	d
+LICENSE_CONDITIONS_END	bpt_internal.h	88;"	d
+LICENSE_CONDITIONS_START	bpt_internal.h	87;"	d
+LICENSE_FILE	bpt_internal.h	82;"	d
+LICENSE_WARRANTEE	bpt_internal.h	83;"	d
+LICENSE_WARRANTEE_END	bpt_internal.h	85;"	d
+LICENSE_WARRANTEE_START	bpt_internal.h	84;"	d
+MAX_ORDER	bpt_internal.h	77;"	d
+MIN_ORDER	bpt_internal.h	76;"	d
+Version	bpt_internal.h	3;"	d
+__BPT_INTERNAL_H__	bpt_internal.h	2;"	d
+bool	bpt_internal.h	67;"	d
+buffer	bpt_internal.h	/^typedef struct buffer{$/;"	s
+dirty	bpt_internal.h	/^	int dirty;$/;"	m	struct:buffer
+false	bpt_internal.h	68;"	d
+frame	bpt_internal.h	/^	char frame[4096];$/;"	m	struct:buffer
+is_planned	bpt_internal.h	/^	int is_planned;$/;"	m	struct:buffer
+nextB	bpt_internal.h	/^	struct* buffer nextB;$/;"	m	struct:buffer	typeref:struct:buffer::buffer
+page_num	bpt_internal.h	/^	uint64_t page_num;$/;"	m	struct:buffer
+prevB	bpt_internal.h	/^	struct* buffer prevB;$/;"	m	struct:buffer	typeref:struct:buffer::buffer
+true	bpt_internal.h	69;"	d

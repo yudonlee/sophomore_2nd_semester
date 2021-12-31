@@ -1,11 +1,10 @@
 #include "bpt_internal.h"
 #include "panic.h"
-BufferMgr buffermgr;
-TableList tablemgr;
+
 /* Helper function used in insert_into_parent to find the index of the parent's
  * pointer to the node to the left of the key to be inserted.
  */
-int get_left_index(int table_id,InternalPage* parent, off_t left_offset) {
+int get_left_index(InternalPage* parent, off_t left_offset) {
 	int left_index = 0;
 	while (left_index <= parent->num_keys && 
 			INTERNAL_OFFSET(parent, left_index) != left_offset)
@@ -15,7 +14,7 @@ int get_left_index(int table_id,InternalPage* parent, off_t left_offset) {
 
 /* Inserts a new value and its corresponding key into a leaf.
  */
-void insert_into_leaf(int table_id,LeafPage* leaf_node, uint64_t key, const char* value) {
+void insert_into_leaf(LeafPage* leaf_node, uint64_t key, const char* value) {
 	int insertion_point;
     int i;
 
@@ -36,13 +35,13 @@ void insert_into_leaf(int table_id,LeafPage* leaf_node, uint64_t key, const char
 	leaf_node->num_keys++;
 
     // Flushes leaf node to the file page
-    file_write_page(table_id,(Page*)leaf_node);
+    file_write_page((Page*)leaf_node);
 }
 
 /* Inserts a new record into a leaf so as to exceed the tree's order, causing
  * the leaf to be split in half.
  */
-void insert_into_leaf_after_splitting(int table_id,LeafPage* leaf, uint64_t key,
+void insert_into_leaf_after_splitting(LeafPage* leaf, uint64_t key,
         const char* value) {
 	int insertion_index, split, i, j;
     uint64_t new_key;
@@ -51,12 +50,7 @@ void insert_into_leaf_after_splitting(int table_id,LeafPage* leaf, uint64_t key,
     LeafPage new_leaf;
     new_leaf.is_leaf = true;
     new_leaf.num_keys = 0;
-	/*		if(buf->is_dirty == 1){
-				int fd2 = dup(tablemgr.table_list[lastBuf->table_id].fd);
-				lseek(fd2, PAGENUM_TO_FILEOFF(page->pagenum), SEEK_SET);
-    			write(fd2, (Page*)lastbuf, PAGE_SIZE);
-			}
-	*/
+
     insertion_index = 0;
     while (insertion_index < order_leaf - 1 &&
             LEAF_KEY(leaf, insertion_index) < key){
@@ -102,7 +96,7 @@ void insert_into_leaf_after_splitting(int table_id,LeafPage* leaf, uint64_t key,
     }
    
     // Allocates a page for new leaf
-    new_leaf.pagenum = file_alloc_page(table_id);
+    new_leaf.pagenum = file_alloc_page();
 
     // Links the leaves
 	new_leaf.sibling = leaf->sibling;
@@ -120,19 +114,19 @@ void insert_into_leaf_after_splitting(int table_id,LeafPage* leaf, uint64_t key,
 
 	new_leaf.parent = leaf->parent;
 
-    file_write_page(table_id,(Page*)leaf);
-    file_write_page(table_id,(Page*)&new_leaf);
+    file_write_page((Page*)leaf);
+    file_write_page((Page*)&new_leaf);
 
 	new_key = LEAF_KEY(&new_leaf, 0);
 
     // Inserts new key and new leaf to the parent
-	insert_into_parent(table_id,(NodePage*)leaf, new_key, (NodePage*)&new_leaf);
+	insert_into_parent((NodePage*)leaf, new_key, (NodePage*)&new_leaf);
 }
 
 /* Inserts a new key and pointer to a node into a node into which these can fit
  * without violating the B+ tree properties.
  */
-void insert_into_node(int table_id,InternalPage* n, int left_index, uint64_t key,
+void insert_into_node(InternalPage* n, int left_index, uint64_t key,
         off_t right_offset) {
     int i;
 
@@ -148,7 +142,7 @@ void insert_into_node(int table_id,InternalPage* n, int left_index, uint64_t key
 /* Inserts a new key and pointer to a node into a node, causing the node's size
  * to exceed the order, and causing the node to split into two.
  */
-void insert_into_node_after_splitting(int table_id,InternalPage* old_node, int left_index,
+void insert_into_node_after_splitting(InternalPage* old_node, int left_index,
         uint64_t key, off_t right_offset) {
     int i, j, split, k_prime;
 	uint64_t* temp_keys;
@@ -191,7 +185,7 @@ void insert_into_node_after_splitting(int table_id,InternalPage* old_node, int l
     InternalPage new_node;
 	new_node.num_keys = 0;
     new_node.is_leaf = 0;
-    new_node.pagenum = file_alloc_page(table_id);
+    new_node.pagenum = file_alloc_page();
 
     old_node->num_keys = 0;
 	for (i = 0; i < split - 1; i++) {
@@ -212,10 +206,10 @@ void insert_into_node_after_splitting(int table_id,InternalPage* old_node, int l
 	new_node.parent = old_node->parent;
 	for (i = 0; i <= new_node.num_keys; i++) {
 		NodePage child_page;
-        file_read_page(table_id,FILEOFF_TO_PAGENUM(INTERNAL_OFFSET(&new_node, i)),
+        file_read_page(FILEOFF_TO_PAGENUM(INTERNAL_OFFSET(&new_node, i)),
                        (Page*)&child_page);
         child_page.parent = PAGENUM_TO_FILEOFF(new_node.pagenum);
-	    file_write_page(table_id,(Page*)&child_page);
+	    file_write_page((Page*)&child_page);
     }
 
     // Cleans garbage records
@@ -230,61 +224,62 @@ void insert_into_node_after_splitting(int table_id,InternalPage* old_node, int l
     }
 
     // Flushes old, new nodes
-    file_write_page(table_id,(Page*)&new_node);
-    file_write_page(table_id,(Page*)old_node);
+    file_write_page((Page*)&new_node);
+    file_write_page((Page*)old_node);
 
 	/* Inserts a new key into the parent of the two nodes resulting from the
      * split, with the old node to the left and the new to the right.
 	 */
-	insert_into_parent(table_id,(NodePage*)old_node, k_prime, (NodePage*)&new_node);
+	insert_into_parent((NodePage*)old_node, k_prime, (NodePage*)&new_node);
 }
 
 /* Inserts a new node (leaf or internal node) into the B+ tree.
  * Returns the root of the tree after insertion.
  */
-void insert_into_parent(int table_id,NodePage* left, uint64_t key, NodePage* right) {
+void insert_into_parent(NodePage* left, uint64_t key, NodePage* right) {
 	int left_index;
     InternalPage parent_node;
 
     /* Case: new root. */
 	if (left->parent == 0) {
-		insert_into_new_root(table_id,left, key, right);
+		insert_into_new_root(left, key, right);
         return;
     }
 
-    file_read_page(table_id,FILEOFF_TO_PAGENUM(left->parent), (Page*)&parent_node);
+    file_read_page(FILEOFF_TO_PAGENUM(left->parent), (Page*)&parent_node);
 
 	/* Case: leaf or node. (Remainder of function body.)  
 	 */
 
 	/* Finds the parent's pointer to the left node.
 	 */
-	left_index = get_left_index(table_id,&parent_node,PAGENUM_TO_FILEOFF(left->pagenum));
+	left_index = get_left_index(&parent_node,
+            PAGENUM_TO_FILEOFF(left->pagenum));
 
 	/* Simple case: the new key fits into the node. 
 	 */
 	if (parent_node.num_keys < order_internal - 1) {
-		insert_into_node(table_id,&parent_node, left_index, key,
+		insert_into_node(&parent_node, left_index, key,
                          PAGENUM_TO_FILEOFF(right->pagenum));
-        file_write_page(table_id,(Page*)&parent_node);
+        file_write_page((Page*)&parent_node);
         return;
     }
 
 	/* Harder case: splits a node in order to preserve the B+ tree properties.
 	 * 
 	 */
-	return insert_into_node_after_splitting(table_id,&parent_node, left_index, key,
+	return insert_into_node_after_splitting(&parent_node, left_index, key,
                                             PAGENUM_TO_FILEOFF(right->pagenum));
 }
 
 /* Creates a new root for two subtrees and inserts the appropriate key into
  * the new root.
  */
-void insert_into_new_root(int table_id,NodePage* left, uint64_t key, NodePage* right) {
+void insert_into_new_root(NodePage* left, uint64_t key, NodePage* right) {
     // Makes new root node
     InternalPage root_node;
     memset(&root_node, 0, sizeof(InternalPage));
-    root_node.pagenum = file_alloc_page(table_id);
+    root_node.pagenum = file_alloc_page();
     INTERNAL_KEY(&root_node, 0) = key;
     INTERNAL_OFFSET(&root_node, 0) = PAGENUM_TO_FILEOFF(left->pagenum);
     INTERNAL_OFFSET(&root_node, 1) = PAGENUM_TO_FILEOFF(right->pagenum);
@@ -294,19 +289,19 @@ void insert_into_new_root(int table_id,NodePage* left, uint64_t key, NodePage* r
     left->parent = PAGENUM_TO_FILEOFF(root_node.pagenum);
     right->parent = PAGENUM_TO_FILEOFF(root_node.pagenum);
 
-    file_write_page(table_id,(Page*)&root_node);
-    file_write_page(table_id,(Page*)left);
-    file_write_page(table_id,(Page*)right);
+    file_write_page((Page*)&root_node);
+    file_write_page((Page*)left);
+    file_write_page((Page*)right);
 
-    tablemgr.table_list[table_id].headerpage->root_offset = PAGENUM_TO_FILEOFF(root_node.pagenum);
-    file_write_page(table_id,(Page*)tablemgr.table_list[table_id].headerpage);
+    dbheader.root_offset = PAGENUM_TO_FILEOFF(root_node.pagenum);
+    file_write_page((Page*)&dbheader);
 }
 /* First insertion: start a new tree.
  */
-void start_new_tree(int table_id,uint64_t key, const char* value) {
+void start_new_tree(uint64_t key, const char* value) {
     LeafPage root_node;
     
-    pagenum_t root_pagenum = file_alloc_page(table_id);
+    pagenum_t root_pagenum = file_alloc_page();
     root_node.pagenum = root_pagenum;
 
     root_node.parent = 0;
@@ -316,46 +311,46 @@ void start_new_tree(int table_id,uint64_t key, const char* value) {
     root_node.sibling = 0;
     memcpy(LEAF_VALUE(&root_node, 0), value, SIZE_VALUE);
     
-    file_write_page(table_id,(Page*)&root_node);
-    tablemgr.table_list[table_id].headerpage->root_offset = PAGENUM_TO_FILEOFF(root_pagenum);
-    file_write_page(table_id,(Page*)tablemgr.table_list[table_id].headerpage);
+    file_write_page((Page*)&root_node);
+
+    dbheader.root_offset = PAGENUM_TO_FILEOFF(root_pagenum);
+    file_write_page((Page*)&dbheader);
 }
 
 /* Master insertion function.
  * Inserts a key and an associated value into the B+ tree, causing the tree to
  * be adjusted however necessary to maintain the B+ tree properties.
  */
-int insert_record(int table_id,uint64_t key, const char* value) {
+int insert_record(uint64_t key, const char* value) {
     char* value_found = NULL;
 
     /* The current implementation ignores duplicates.
 	 */
-    if ((value_found = find_record(table_id,key)) != 0) {
+    if ((value_found = find_record(key)) != 0) {
         free(value_found);
         return -1;
     }
 
 	/* Case: the tree does not exist yet. Start a new tree.
 	 */
-	if (tablemgr.table_list[table_id].headerpage->root_offset == 0) {
-		start_new_tree(table_id,key, value);
+	if (dbheader.root_offset == 0) {
+		start_new_tree(key, value);
         return 0;
     }
 	
-    
-	/* Case: the tree already exists. (Rest of function body.)
+    /* Case: the tree already exists. (Rest of function body.)
 	 */
     LeafPage leaf_node;
-    find_leaf(table_id,key, &leaf_node);
+    find_leaf(key, &leaf_node);
 
 	/* Case: leaf has room for key and pointer.
 	 */
 	if (leaf_node.num_keys < order_leaf - 1) {
-        insert_into_leaf(table_id,&leaf_node, key, value);
+        insert_into_leaf(&leaf_node, key, value);
 	} else {
     	/* Case:  leaf must be split.
 	     */
-        insert_into_leaf_after_splitting(table_id,&leaf_node, key, value);
+        insert_into_leaf_after_splitting(&leaf_node, key, value);
     }
     return 0;
 }

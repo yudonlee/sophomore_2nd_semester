@@ -1,7 +1,5 @@
 #include "bpt_internal.h"
 #include "panic.h"
-BufferMgr buffermgr;
-TableList tablemgr;
 
 // DELETION.
 
@@ -9,14 +7,14 @@ TableList tablemgr;
  * neighbor (sibling) to the left if one exists.  If not (the node is the
  * leftmost child), returns -1 to signify this special case.
  */
-int get_neighbor_index(int table_id,NodePage* node_page) {
+int get_neighbor_index(NodePage* node_page) {
 	int i;
 
 	/* Returns the index of the key to the left of the pointer in the parent
      * pointing to n. If n is the leftmost child, this means return -1.
 	 */
     InternalPage parent_node;
-    file_read_page(table_id,FILEOFF_TO_PAGENUM(node_page->parent), (Page*)&parent_node);
+    file_read_page(FILEOFF_TO_PAGENUM(node_page->parent), (Page*)&parent_node);
 	for (i = 0; i <= parent_node.num_keys; i++)
 		if (INTERNAL_OFFSET(&parent_node, i)
                     == PAGENUM_TO_FILEOFF(node_page->pagenum))
@@ -27,7 +25,7 @@ int get_neighbor_index(int table_id,NodePage* node_page) {
     return -1;
 }
 
-void remove_entry_from_node(int table_id,NodePage* node_page, uint64_t key) {
+void remove_entry_from_node(NodePage* node_page, uint64_t key) {
 	int i;
     int key_idx = 0;
 
@@ -83,12 +81,12 @@ void remove_entry_from_node(int table_id,NodePage* node_page, uint64_t key) {
         internal_node->num_keys--;
     }
 
-    file_write_page(table_id,(Page*)node_page);
+    file_write_page((Page*)node_page);
 }
 
-void adjust_root(int table_id) {
+void adjust_root() {
     NodePage root_page;
-    file_read_page(table_id,FILEOFF_TO_PAGENUM(tablemgr.table_list[table_id].headerpage->root_offset), (Page*)&root_page);
+    file_read_page(FILEOFF_TO_PAGENUM(dbheader.root_offset), (Page*)&root_page);
 
 	/* Case: nonempty root.
      * Key and pointer have already been deleted, so nothing to be done.
@@ -105,30 +103,32 @@ void adjust_root(int table_id) {
 
 	if (!root_page.is_leaf) {
         InternalPage* root_node = (InternalPage*)&root_page;
-        tablemgr.table_list[table_id].headerpage->root_offset = INTERNAL_OFFSET(root_node, 0);
+        dbheader.root_offset = INTERNAL_OFFSET(root_node, 0);
 		
         NodePage node_page;
-        file_read_page(table_id,FILEOFF_TO_PAGENUM(tablemgr.table_list[table_id].headerpage->root_offset), (Page*)&node_page);
+        file_read_page(FILEOFF_TO_PAGENUM(dbheader.root_offset),
+                       (Page*)&node_page);
         node_page.parent = 0;
-        file_write_page(table_id,(Page*)&node_page);
-        file_write_page(table_id,(Page*)tablemgr.table_list[table_id].headerpage);
+
+        file_write_page((Page*)&node_page);
+        file_write_page((Page*)&dbheader);
 	}
 
 	/* If it is a leaf (has no children), then the whole tree is empty.
 	 */ 
 
 	else {
-        tablemgr.table_list[table_id].headerpage->root_offset = 0;
-        file_write_page(table_id,(Page*)tablemgr.table_list[table_id].headerpage);
+        dbheader.root_offset = 0;
+        file_write_page((Page*)&dbheader);
     }
 
-    file_free_page(table_id,root_page.pagenum);
+    file_free_page(root_page.pagenum);
 }
 
 /* Coalesces a node that has become too small after deletion with a neighboring
  * node that can accept the additional entries without exceeding the maximum.
  */
-void coalesce_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,
+void coalesce_nodes(NodePage* node_page, NodePage* neighbor_page,
         int neighbor_index, int k_prime) {
 
 	int i, j, neighbor_insertion_index, n_end;
@@ -185,15 +185,15 @@ void coalesce_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,
 
 		for (i = 0; i < neighbor_node->num_keys + 1; i++) {
             NodePage child_page;
-            file_read_page(table_id,FILEOFF_TO_PAGENUM(INTERNAL_OFFSET(neighbor_node, i)),
+            file_read_page(FILEOFF_TO_PAGENUM(INTERNAL_OFFSET(neighbor_node, i)),
                            (Page*)&child_page);
             child_page.parent = PAGENUM_TO_FILEOFF(neighbor_node->pagenum);
-		    file_write_page(table_id,(Page*)&child_page);
+		    file_write_page((Page*)&child_page);
         }
 
-        file_write_page(table_id,(Page*)neighbor_node);
+        file_write_page((Page*)neighbor_node);
 
-        file_free_page(table_id,node->pagenum);
+        file_free_page(node->pagenum);
 	}
 
 	/* In a leaf, appends the keys and pointers of n to the neighbor.
@@ -213,21 +213,21 @@ void coalesce_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,
 		}
         neighbor_node->sibling = node->sibling;
 
-        file_write_page(table_id,(Page*)neighbor_node);
+        file_write_page((Page*)neighbor_node);
 
-        file_free_page(table_id,node->pagenum);
+        file_free_page(node->pagenum);
 	}
 
     NodePage parent_node;
-    file_read_page(table_id,FILEOFF_TO_PAGENUM(node_page->parent), (Page*)&parent_node);
-	delete_entry(table_id,&parent_node, k_prime);
+    file_read_page(FILEOFF_TO_PAGENUM(node_page->parent), (Page*)&parent_node);
+	delete_entry(&parent_node, k_prime);
 }
 
 /* Redistributes entries between two nodes when one has become too small after
  * deletion but its neighbor is too big to append the small node's entries
  * without exceeding the maximum.
  */
-void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,
+void redistribute_nodes(NodePage* node_page, NodePage* neighbor_page,
                         int neighbor_index, 
 		                int k_prime_index, int k_prime) {  
 
@@ -252,20 +252,20 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
             INTERNAL_OFFSET(node, 0) =
                 INTERNAL_OFFSET(neighbor_node, neighbor_node->num_keys);
             NodePage child_page;
-            file_read_page(table_id,FILEOFF_TO_PAGENUM(INTERNAL_OFFSET(node, 0)),
+            file_read_page(FILEOFF_TO_PAGENUM(INTERNAL_OFFSET(node, 0)),
                            (Page*)&child_page);
             child_page.parent = PAGENUM_TO_FILEOFF(node->pagenum);
-            file_write_page(table_id,(Page*)&child_page);
+            file_write_page((Page*)&child_page);
 
 			INTERNAL_OFFSET(neighbor_node, neighbor_node->num_keys) = 0;
 			INTERNAL_KEY(node, 0) = k_prime;
 
             InternalPage parent_node;
-            file_read_page(table_id,FILEOFF_TO_PAGENUM(node->parent),
+            file_read_page(FILEOFF_TO_PAGENUM(node->parent),
                            (Page*)&parent_node);
             INTERNAL_KEY(&parent_node, k_prime_index) =
                 INTERNAL_KEY(neighbor_node, neighbor_node->num_keys - 1);
-            file_write_page(table_id,(Page*)&parent_node);
+            file_write_page((Page*)&parent_node);
 
             /* n now has one more key and one more pointer;
              * the neighbor has one fewer of each.
@@ -273,8 +273,8 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
             node->num_keys++;
             neighbor_node->num_keys--;
             
-            file_write_page(table_id,(Page*)node_page);
-            file_write_page(table_id,(Page*)neighbor_page);
+            file_write_page((Page*)node_page);
+            file_write_page((Page*)neighbor_page);
 
         } else {
             LeafPage* node = (LeafPage*)node_page;
@@ -292,10 +292,10 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
 			LEAF_KEY(node, 0) = LEAF_KEY(neighbor_node, neighbor_node->num_keys - 1);
 
             InternalPage parent_node;
-            file_read_page(table_id,FILEOFF_TO_PAGENUM(node->parent),
+            file_read_page(FILEOFF_TO_PAGENUM(node->parent),
                            (Page*)&parent_node);
 			INTERNAL_KEY(&parent_node, k_prime_index) = LEAF_KEY(node, 0);
-            file_write_page(table_id,(Page*)&parent_node);
+            file_write_page((Page*)&parent_node);
 
             /* n now has one more key and one more pointer;
              * the neighbor has one fewer of each.
@@ -303,8 +303,8 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
             node->num_keys++;
             neighbor_node->num_keys--;
             
-            file_write_page(table_id,(Page*)node_page);
-            file_write_page(table_id,(Page*)neighbor_page);
+            file_write_page((Page*)node_page);
+            file_write_page((Page*)neighbor_page);
         }
     }
 
@@ -323,10 +323,10 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
                     SIZE_VALUE);
 
             InternalPage parent_node;
-            file_read_page(table_id,FILEOFF_TO_PAGENUM(node->parent),
+            file_read_page(FILEOFF_TO_PAGENUM(node->parent),
                            (Page*)&parent_node);
 			INTERNAL_KEY(&parent_node, k_prime_index) = LEAF_KEY(neighbor_node, 1);
-            file_write_page(table_id,(Page*)&parent_node);
+            file_write_page((Page*)&parent_node);
             
             for (i = 0; i < neighbor_node->num_keys - 1; i++) {
 			    LEAF_KEY(neighbor_node, i) = LEAF_KEY(neighbor_node, i + 1);
@@ -340,8 +340,8 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
             node->num_keys++;
             neighbor_node->num_keys--;
             
-            file_write_page(table_id,(Page*)node_page);
-            file_write_page(table_id,(Page*)neighbor_page);
+            file_write_page((Page*)node_page);
+            file_write_page((Page*)neighbor_page);
 
 		}
 		else {
@@ -353,17 +353,18 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
                 INTERNAL_OFFSET(neighbor_node, 0);
             
             NodePage child_page;
-            file_read_page(table_id,FILEOFF_TO_PAGENUM(INTERNAL_OFFSET(node, node->num_keys + 1)),
+            file_read_page(FILEOFF_TO_PAGENUM(
+                                    INTERNAL_OFFSET(node, node->num_keys + 1)),
                            (Page*)&child_page);
             child_page.parent = PAGENUM_TO_FILEOFF(node->pagenum);
-			file_write_page(table_id,(Page*)&child_page);
+			file_write_page((Page*)&child_page);
 
             InternalPage parent_node;
-            file_read_page(table_id,FILEOFF_TO_PAGENUM(node->parent),
+            file_read_page(FILEOFF_TO_PAGENUM(node->parent),
                            (Page*)&parent_node);
             INTERNAL_KEY(&parent_node, k_prime_index) =
                 INTERNAL_KEY(neighbor_node, 0);
-            file_write_page(table_id,(Page*)&parent_node);
+            file_write_page((Page*)&parent_node);
 
             for (i = 0; i < neighbor_node->num_keys - 1; i++) {
 			    INTERNAL_KEY(neighbor_node, i) = INTERNAL_KEY(neighbor_node, i + 1);
@@ -381,8 +382,8 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
             node->num_keys++;
             neighbor_node->num_keys--;
             
-            file_write_page(table_id,(Page*)node_page);
-            file_write_page(table_id,(Page*)neighbor_page);
+            file_write_page((Page*)node_page);
+            file_write_page((Page*)neighbor_page);
 
 		}
     }
@@ -393,7 +394,7 @@ void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_pag
  * Removes the record and its key and pointer from the leaf, and then makes all
  * appropriate changes to preserve the B+ tree properties.
  */
-void delete_entry(int table_id,NodePage* node_page, uint64_t key) {
+void delete_entry(NodePage* node_page, uint64_t key) {
 
 	int min_keys;
 	off_t neighbor_offset;
@@ -403,12 +404,12 @@ void delete_entry(int table_id,NodePage* node_page, uint64_t key) {
 
 	// Removes key and pointer from node.
 
-	remove_entry_from_node(table_id,node_page, key);
+	remove_entry_from_node(node_page, key);
 	/* Case:  deletion from the root. 
 	 */
 
-	if (tablemgr.table_list[table_id].headerpage->root_offset == PAGENUM_TO_FILEOFF(node_page->pagenum)) {
-		adjust_root(table_id);
+	if (dbheader.root_offset == PAGENUM_TO_FILEOFF(node_page->pagenum)) {
+		adjust_root();
         return;
     }
 
@@ -441,11 +442,11 @@ void delete_entry(int table_id,NodePage* node_page, uint64_t key) {
      * and the pointer to the neighbor.
 	 */
 
-	neighbor_index = get_neighbor_index(table_id,node_page);
+	neighbor_index = get_neighbor_index(node_page);
 	k_prime_index = neighbor_index == -1 ? 0 : neighbor_index;
 
     InternalPage parent_node;
-    file_read_page(table_id,FILEOFF_TO_PAGENUM(node_page->parent), (Page*)&parent_node);
+    file_read_page(FILEOFF_TO_PAGENUM(node_page->parent), (Page*)&parent_node);
 
 	k_prime = INTERNAL_KEY(&parent_node, k_prime_index);
 	neighbor_offset = neighbor_index == -1 ? INTERNAL_OFFSET(&parent_node, 1) : 
@@ -454,33 +455,33 @@ void delete_entry(int table_id,NodePage* node_page, uint64_t key) {
 	capacity = node_page->is_leaf ? order_leaf : order_internal - 1;
 
     NodePage neighbor_page;
-    file_read_page(table_id,FILEOFF_TO_PAGENUM(neighbor_offset), (Page*)&neighbor_page);
+    file_read_page(FILEOFF_TO_PAGENUM(neighbor_offset), (Page*)&neighbor_page);
 	/* Coalescence. */
 
 	if (neighbor_page.num_keys + node_page->num_keys < capacity)
-		coalesce_nodes(table_id,node_page, &neighbor_page, neighbor_index, k_prime);
+		coalesce_nodes(node_page, &neighbor_page, neighbor_index, k_prime);
 
 	/* Redistribution. */
 
 	else
-		redistribute_nodes(table_id,node_page, &neighbor_page, neighbor_index, k_prime_index,
+		redistribute_nodes(node_page, &neighbor_page, neighbor_index, k_prime_index,
                 k_prime);
 }
 
 /* Master deletion function.
  */
-int delete_record(int table_id,uint64_t key) {
+int delete_record(uint64_t key) {
     char* value_found = NULL;
-    if ((value_found = find_record(table_id,key)) == 0) {
+    if ((value_found = find_record(key)) == 0) {
         // This key is not in the tree
         free(value_found);
         return -1;
     }
 
     LeafPage leaf_node;
-    find_leaf(table_id,key, &leaf_node);
+    find_leaf(key, &leaf_node);
 
-    delete_entry(table_id,(NodePage*)&leaf_node, key);
+    delete_entry((NodePage*)&leaf_node, key);
 
     return 0;
 }

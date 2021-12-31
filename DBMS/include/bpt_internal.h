@@ -63,7 +63,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "file.h"
-#include "panic.h"
 #ifdef WINDOWS
 #define bool char
 #define false 0
@@ -91,50 +90,44 @@
 // GLOBALS.
 extern int order_internal;
 extern int order_leaf;
-//extern TableList tablemgr;
-//extern BufferMgr buffermgr;
 //extern HeaderPage dbheader;
 //extern int dbfile;
-extern BufferMgr buffermgr;
-extern TableList tablemgr;
-
 // FUNCTION PROTOTYPES.
 
 // Output and utility.
-bool find_leaf(int table_id,uint64_t key, LeafPage* out_leaf_node);
-char *find_record(int table_id,uint64_t key);
-Buffer* find_buf(int table_id,pagenum_t page_num);
+bool find_leaf(uint64_t key, LeafPage* out_leaf_node);
+char *find_record(uint64_t key);
+
 // Helper function
 int cut( int length );
 
-// DB initialization
-/*int init_db(int num_buf);
+// DB initialization.
 int open_or_create_db_file(const char* filename);
-int close_db_table(int table_id);
-*/
+void close_db_file();
+
 // Insertion.
-void start_new_tree(int table_id,uint64_t key, const char* value);
-void insert_into_leaf(int table_id,LeafPage* leaf_node, uint64_t key, const char* value);
-void insert_into_leaf_after_splitting(int table_id,LeafPage* leaf_node, uint64_t key,
+void start_new_tree(uint64_t key, const char* value);
+void insert_into_leaf(LeafPage* leaf_node, uint64_t key, const char* value);
+void insert_into_leaf_after_splitting(LeafPage* leaf_node, uint64_t key,
         const char* value);
-void insert_into_parent(int table_id,NodePage* left, uint64_t key, NodePage* right);
-void insert_into_new_root(int table_id,NodePage* left, uint64_t key, NodePage* right);
-int get_left_index(int table_id,InternalPage* parent, off_t left_offset);
-void insert_into_node(int table_id,InternalPage * parent, int left_index, uint64_t key,
+void insert_into_parent(NodePage* left, uint64_t key, NodePage* right);
+void insert_into_new_root(NodePage* left, uint64_t key, NodePage* right);
+int get_left_index(InternalPage* parent, off_t left_offset);
+void insert_into_node(InternalPage * parent, int left_index, uint64_t key,
         off_t right_offset);
-void insert_into_node_after_splitting(int table_id,InternalPage* parent, int left_index,
+void insert_into_node_after_splitting(InternalPage* parent, int left_index,
         uint64_t key, off_t right_offset);
-int insert_record(int table_id,uint64_t key, const char* value);
+int insert_record(uint64_t key, const char* value);
 
 // Deletion.
-int get_neighbor_index(int table_id,NodePage* node_page);
-void adjust_root(int table_id);
-void coalesce_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,
+int get_neighbor_index(NodePage* node_page);
+void adjust_root();
+void coalesce_nodes(NodePage* node_page, NodePage* neighbor_page,
                       int neighbor_index, int k_prime);
-void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,
+void redistribute_nodes(NodePage* node_page, NodePage* neighbor_page,
                           int neighbor_index,
                           int k_prime_index, int k_prime);
-void delete_entry(int table_id,NodePage* node_page, uint64_t key);
-int delete_record(int table_id,uint64_t key);
+void delete_entry(NodePage* node_page, uint64_t key);
+int delete_record(uint64_t key);
 
 #endif /* __BPT_INTERNAL_H__ */

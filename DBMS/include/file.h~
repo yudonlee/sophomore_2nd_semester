@@ -143,13 +143,10 @@ typedef struct _NodePage {
 //open db table
 int init_db(int num_buf);
 int open_table(const char* filename);
-Buffer find_buf(int table_id,pagenum_t page_num);
-int open_or_create_db_file(const char* filename);
+
 // Close a db file
 void close_db(int table_id);
 
-
-void expand_file(size_t cnt_page_to_expand,int table_id);
 // Get free page to use
 pagenum_t file_alloc_page(int table_id);
 
@@ -162,6 +159,4 @@ void file_read_page(pagenum_t pagenum, Page* page,int table_id);
 // Flush page into the file
 void file_write_page(Page* page,int table_id);
 
-int update_buffer(Page* page,int table_id);
 
-int drop_victim(Page* page,int table_id);
