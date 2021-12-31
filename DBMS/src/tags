@@ -4,46 +4,60 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-adjust_root	delete.c	/^void adjust_root() {$/;"	f
-close_db	bpt_ext.c	/^void close_db() {$/;"	f
-close_db_file	db.c	/^void close_db_file() {$/;"	f
-coalesce_nodes	delete.c	/^void coalesce_nodes(NodePage* node_page, NodePage* neighbor_page,$/;"	f
+adjust_root	delete.c	/^void adjust_root(int table_id) {$/;"	f
+buffer_read_to_page	file.c	/^void buffer_read_to_page(int table_id,pagenum_t pagenum){$/;"	f
+buffer_write_to_page	file.c	/^int buffer_write_to_page(){	$/;"	f
+buffermgr	delete.c	/^BufferMgr buffermgr;$/;"	v
+buffermgr	file.c	/^BufferMgr buffermgr;$/;"	v
+buffermgr	insert.c	/^BufferMgr buffermgr;$/;"	v
+buffermgr	univ.c	/^BufferMgr buffermgr;$/;"	v
+close_db_table	db.c	/^int close_db_table(int table_id){$/;"	f
+close_table	bpt_ext.c	/^void close_table(int table_id) {$/;"	f
+coalesce_nodes	delete.c	/^void coalesce_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,$/;"	f
 cut	univ.c	/^int cut( int length ) {$/;"	f
-dbfile	file.c	/^int dbfile;$/;"	v
-dbheader	file.c	/^HeaderPage dbheader;$/;"	v
-delete	bpt_ext.c	/^int delete(uint64_t key) {$/;"	f
-delete_entry	delete.c	/^void delete_entry(NodePage* node_page, uint64_t key) {$/;"	f
-delete_record	delete.c	/^int delete_record(uint64_t key) {$/;"	f
-expand_file	file.c	/^void expand_file(size_t cnt_page_to_expand) {$/;"	f
-file_alloc_page	file.c	/^pagenum_t file_alloc_page() {$/;"	f
-file_free_page	file.c	/^void file_free_page(pagenum_t pagenum) {$/;"	f
-file_read_page	file.c	/^void file_read_page(pagenum_t pagenum, Page* page) {$/;"	f
-file_write_page	file.c	/^void file_write_page(Page* page) {$/;"	f
-find	bpt_ext.c	/^char* find(uint64_t key) {$/;"	f
-find_and_print	bpt_ext.c	/^void find_and_print(uint64_t key) {$/;"	f
-find_leaf	univ.c	/^bool find_leaf(uint64_t key, LeafPage* out_leaf_node) {$/;"	f
-find_record	univ.c	/^char* find_record(uint64_t key) {$/;"	f
-get_left_index	insert.c	/^int get_left_index(InternalPage* parent, off_t left_offset) {$/;"	f
-get_neighbor_index	delete.c	/^int get_neighbor_index(NodePage* node_page) {$/;"	f
+delete	bpt_ext.c	/^int delete(int table_id,uint64_t key) {$/;"	f
+delete_entry	delete.c	/^void delete_entry(int table_id,NodePage* node_page, uint64_t key) {$/;"	f
+delete_record	delete.c	/^int delete_record(int table_id,uint64_t key) {$/;"	f
+expand_file	file.c	/^void expand_file(int table_id,size_t cnt_page_to_expand) {$/;"	f
+file_alloc_page	file.c	/^pagenum_t file_alloc_page(int table_id) {$/;"	f
+file_free_page	file.c	/^void file_free_page(int table_id,pagenum_t pagenum) {$/;"	f
+file_read_headerpage	file.c	/^void file_read_headerpage(int table_id,pagenum_t pagenum){$/;"	f
+file_read_page	file.c	/^void file_read_page(int table_id,pagenum_t pagenum,Page* page) {$/;"	f
+file_write_page	file.c	/^void file_write_page(int table_id,Page* page){		$/;"	f
+find	bpt_ext.c	/^char* find(int table_id,uint64_t key) {$/;"	f
+find_and_print	bpt_ext.c	/^void find_and_print(int table_id,uint64_t key) {$/;"	f
+find_buf	univ.c	/^Buffer* find_buf(int table_id,pagenum_t page_num){$/;"	f
+find_leaf	univ.c	/^bool find_leaf(int table_id,uint64_t key, LeafPage* out_leaf_node) {$/;"	f
+find_record	univ.c	/^char* find_record(int table_id,uint64_t key) {$/;"	f
+find_table_id	db.c	/^int find_table_id(char* table_name){$/;"	f
+get_left_index	insert.c	/^int get_left_index(int table_id,InternalPage* parent, off_t left_offset) {$/;"	f
+get_neighbor_index	delete.c	/^int get_neighbor_index(int table_id,NodePage* node_page) {$/;"	f
 init_db	db.c	/^int init_db(int num_buf){$/;"	f
-insert	bpt_ext.c	/^int insert(uint64_t key, const char* value) {$/;"	f
-insert_into_leaf	insert.c	/^void insert_into_leaf(LeafPage* leaf_node, uint64_t key, const char* value) {$/;"	f
-insert_into_leaf_after_splitting	insert.c	/^void insert_into_leaf_after_splitting(LeafPage* leaf, uint64_t key,$/;"	f
-insert_into_new_root	insert.c	/^void insert_into_new_root(NodePage* left, uint64_t key, NodePage* right) {$/;"	f
-insert_into_node	insert.c	/^void insert_into_node(InternalPage* n, int left_index, uint64_t key,$/;"	f
-insert_into_node_after_splitting	insert.c	/^void insert_into_node_after_splitting(InternalPage* old_node, int left_index,$/;"	f
-insert_into_parent	insert.c	/^void insert_into_parent(NodePage* left, uint64_t key, NodePage* right) {$/;"	f
-insert_record	insert.c	/^int insert_record(uint64_t key, const char* value) {$/;"	f
+insert	bpt_ext.c	/^int insert(int table_id,uint64_t key, const char* value) {$/;"	f
+insert_into_leaf	insert.c	/^void insert_into_leaf(int table_id,LeafPage* leaf_node, uint64_t key, const char* value) {$/;"	f
+insert_into_leaf_after_splitting	insert.c	/^void insert_into_leaf_after_splitting(int table_id,LeafPage* leaf, uint64_t key,$/;"	f
+insert_into_new_root	insert.c	/^void insert_into_new_root(int table_id,NodePage* left, uint64_t key, NodePage* right) {$/;"	f
+insert_into_node	insert.c	/^void insert_into_node(int table_id,InternalPage* n, int left_index, uint64_t key,$/;"	f
+insert_into_node_after_splitting	insert.c	/^void insert_into_node_after_splitting(int table_id,InternalPage* old_node, int left_index,$/;"	f
+insert_into_parent	insert.c	/^void insert_into_parent(int table_id,NodePage* left, uint64_t key, NodePage* right) {$/;"	f
+insert_record	insert.c	/^int insert_record(int table_id,uint64_t key, const char* value) {$/;"	f
 license_notice	bpt_ext.c	/^void license_notice( void ) {$/;"	f
 main	main.c	/^int main( int argc, char ** argv ) {$/;"	f
+memory_write_to_buffer	file.c	/^int memory_write_to_buffer(int table_id,Page* page) {$/;"	f
 open_or_create_db_file	db.c	/^int open_or_create_db_file(const char* filename) {$/;"	f
 open_table	bpt_ext.c	/^int open_table(const char* filename) {$/;"	f
 order_internal	global_vars.c	/^int order_internal = BPTREE_INTERNAL_ORDER;$/;"	v
 order_leaf	global_vars.c	/^int order_leaf = BPTREE_LEAF_ORDER;$/;"	v
+overwrite_buffer	file.c	/^int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page){$/;"	f
 print_license	bpt_ext.c	/^void print_license( int license_part ) {$/;"	f
-print_tree	bpt_ext.c	/^void print_tree() {$/;"	f
-redistribute_nodes	delete.c	/^void redistribute_nodes(NodePage* node_page, NodePage* neighbor_page,$/;"	f
-remove_entry_from_node	delete.c	/^void remove_entry_from_node(NodePage* node_page, uint64_t key) {$/;"	f
-start_new_tree	insert.c	/^void start_new_tree(uint64_t key, const char* value) {$/;"	f
+print_tree	bpt_ext.c	/^void print_tree(int table_id) {$/;"	f
+redistribute_nodes	delete.c	/^void redistribute_nodes(int table_id,NodePage* node_page, NodePage* neighbor_page,$/;"	f
+remove_entry_from_node	delete.c	/^void remove_entry_from_node(int table_id,NodePage* node_page, uint64_t key) {$/;"	f
+shutdown_db	db.c	/^int shutdown_db(){$/;"	f
+start_new_tree	insert.c	/^void start_new_tree(int table_id,uint64_t key, const char* value) {$/;"	f
+tablemgr	delete.c	/^TableList tablemgr;$/;"	v
+tablemgr	file.c	/^TableList tablemgr;$/;"	v
+tablemgr	insert.c	/^TableList tablemgr;$/;"	v
+tablemgr	univ.c	/^TableList tablemgr;$/;"	v
 usage_1	bpt_ext.c	/^void usage_1( void ) {$/;"	f
 usage_2	bpt_ext.c	/^void usage_2( void ) {$/;"	f

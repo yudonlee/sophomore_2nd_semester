@@ -1,8 +1,14 @@
+#ifndef __FILE_H__
+#define __FILE_H__
+
 #include <stddef.h>
 #include <inttypes.h>
 
-#define BPTREE_INTERNAL_ORDER       4//249
-#define BPTREE_LEAF_ORDER           4//32
+#define BPTREE_INTERNAL_ORDER       249
+#define BPTREE_LEAF_ORDER           32
+
+#define FILENAME_MAX_LENGTH 256
+#define FAIL -1
 
 #define PAGE_SIZE                   4096
 
@@ -15,9 +21,8 @@
 typedef uint64_t pagenum_t;
 #define PAGENUM_TO_FILEOFF(pgnum)   ((pgnum) * PAGE_SIZE)
 #define FILEOFF_TO_PAGENUM(off)     ((pagenum_t)((off) / PAGE_SIZE))
-extern BufferMgr buffermgr;
-extern TableList tablemgr;
 
+#define TABLE_ORDER 10 // Table_id must be between 1 to 10.
 /* Type representing the record
  * to which a given key refers.
  * In a real B+ tree system, the
@@ -28,31 +33,7 @@ extern TableList tablemgr;
  * to change the type and content
  * of the value field.
  */
-typedef struct _table{
-	int fd;
-	char name[256];
-	HeaderPage* headerpage;
 
-}Table;
-typedef struct tablelist{
-	Table table_list[TABLE_ORDER+1];
-	int num_tables=0;
-}TableList;
-typedef struct  buffermgr{
-	Buffer* firstBuf;
-	int buf_order; //allocated buffer pool num
-	int buf_used; //used buffer num.
-}BufferMgr;
-typedef struct buffer{
-	char frame[4096];
-	uint64_t table_id;
-	pagenum_t page_num;
-	int table_id;
-	int is_dirty;
-	int is_pinned;
-	struct* buffer prevB;
-	struct* buffer nextB; 
-} Buffer;
 typedef struct _Record {
     uint64_t key;
     char value[SIZE_VALUE];
@@ -82,8 +63,7 @@ typedef struct _HeaderPage {
     off_t freelist;
     off_t root_offset;
     uint64_t num_pages;
-    int table_id;
-	char reserved[PAGE_SIZE - 28];
+    char reserved[PAGE_SIZE - 24];
 
     // in-memory data
     pagenum_t pagenum;
@@ -139,29 +119,80 @@ typedef struct _NodePage {
     pagenum_t pagenum;
 } NodePage;
 
-// Open a db file. Create a file if not exist.
-//open db table
+typedef struct Table{
+	int fd;
+	char name[256];
+	HeaderPage* headerpage;
+
+}Table;
+
+typedef struct TableList{
+	Table table_list[TABLE_ORDER+1];
+	int table_used;
+}TableList;
+
+typedef struct Buffer{
+	char frame[4096];
+	int table_id;
+	uint64_t page_num;
+	int is_dirty;
+	int is_pinned;
+	struct Buffer* prevB;
+	struct Buffer* nextB;
+}Buffer;
+
+typedef struct Buffermgr{
+	Buffer* firstBuf;
+	int buf_order; //allocated buffer pool num
+	int buf_used; //used buffer num.
+}BufferMgr;
+
+//extern TableList tablemgr;
+//extern BufferMgr buffermgr;
+// initialize db.
 int init_db(int num_buf);
-int open_table(const char* filename);
-Buffer find_buf(int table_id,pagenum_t page_num);
+void close_table(int table_id);
+// Open a db file. Create a file if not exist.
 int open_or_create_db_file(const char* filename);
-// Close a db file
-void close_db(int table_id);
 
+// Close a db table
+int close_db_table(int table_id);
 
-void expand_file(size_t cnt_page_to_expand,int table_id);
-// Get free page to use
+// shutdown db
+int shutdown_db();
+
+// expand a db file
+void expand_file(int table_id,size_t cnt_page_to_expand);
+
+// Get free page to use in table_id(dbfile)
 pagenum_t file_alloc_page(int table_id);
 
-// Put free page to the free list
-void file_free_page(pagenum_t pagenum,int table_id);
+// Put free page to the free list in table_id(dbfile)
+void file_free_page(int table_id,pagenum_t pagenum);
 
+/*
 // Load file page into the in-memory page
-void file_read_page(pagenum_t pagenum, Page* page,int table_id);
+//update buffer-pool to read page
+//read in-memory page to buffer pool
+//read in-memory page to buffer pool or page
+void file_read_page_to_buffer(int table_id,pagenum_t pagenum); 
+void file_read_buffer(int table_id,pagenum_t pagenum,Page* page);
+void file_read_page(int table_id,pagenum_t pagenum, Page* page);
 
-// Flush page into the file
-void file_write_page(Page* page,int table_id);
+// write page into the buffer or page
+void file_write_page(int table_id,Page* page);
+int file_write_to_buffer(int table_id,Page* page);
+int drop_victim(); //if there is no spac to evict buffer then return -1.success return 0.
+*/
+//extern HeaderPage dbheader;
+void file_read_headerpage(int table_id,pagenum_t pagenum);
+void buffer_read_to_page(int table_id,pagenum_t pagenum); 
+void memory_read_to_buffer(int table_id,pagenum_t pagenum,Page* page);
+void file_read_page(int table_id,pagenum_t pagenum, Page* page);
 
-int update_buffer(Page* page,int table_id);
-
-int drop_victim(Page* page,int table_id);
+// write page into the buffer or page
+void file_write_page(int table_id,Page* page);
+int memory_write_to_buffer(int table_id,Page* page);
+int overwrite_buffer(int table_id,Buffer* tmp_buf,Page* page);
+int buffer_write_to_page();
+#endif /* __FILE_H__  */
