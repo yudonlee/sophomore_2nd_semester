@@ -24,7 +24,7 @@ macOs monterey 15.0.0(Ubuntu 20.04)
 ![](../image/DB_initial.png)
 make로 만들어진 main함수를 가지고 실행합니다. 이때 argv[1]에는 할당할 블락의 개수를 입력해야 합니다.
 
-![](../image/DB_initial.png)
+![](../image/DB_B+_Tree.png)
 pokemon DB에 (1, 1) = key, value부터 (250, 250까지 넣은 B+ tree의 결과물이 나타납니다.
 
 # 2. 구현함수
