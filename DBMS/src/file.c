@@ -91,7 +91,7 @@ void buffer_read_to_page(int table_id,pagenum_t pagenum){
 		buffermgr.firstBuf = tmp_buf;
 	}
 	else if(buffermgr.buf_used < buffermgr.buf_order){
-		//firstBuf and last Buf is pinned because they will be modicated in prev/nextB
+		//firstBuf and last Buf is pinned because they will be modified in prev/nextB
 		buffermgr.firstBuf->is_pinned =1;
 		buffermgr.firstBuf->prevB->is_pinned =1; 
 		tmp_buf->prevB = buffermgr.firstBuf->prevB;
@@ -248,23 +248,23 @@ int memory_write_to_buffer(int table_id,Page* page) {
 	else if(buffermgr.buf_used < buffermgr.buf_order){
 	//the logical first Buf and last Buf need to be modified.so I want to pin up both of them.
 	//TODO: buffer is cycle.
-	buffermgr.firstBuf->prevB->is_pinned=1;
-	buffermgr.firstBuf->is_pinned=1;
-	Buffer* buf = (Buffer*)malloc(sizeof(Buffer));
-	memcpy(buf,page,PAGE_SIZE);
-	buf->page_num = page->pagenum;
-	buf->table_id = table_id;
-	buf->is_dirty = 1;
-	buf->is_pinned =1;
-	buf->prevB = buffermgr.firstBuf->prevB;
-	buffermgr.firstBuf->prevB = buf;
-	buf->nextB = buffermgr.firstBuf;
-	buffermgr.firstBuf->is_pinned=0;
-	buf->prevB->is_pinned=0;
-	//buffermgr firstBuf is now buf;
-	buffermgr.firstBuf = buf;
-	buf->is_pinned=0;
-	buffermgr.buf_used++;
+		buffermgr.firstBuf->prevB->is_pinned=1;
+		buffermgr.firstBuf->is_pinned=1;
+		Buffer* buf = (Buffer*)malloc(sizeof(Buffer));
+		memcpy(buf,page,PAGE_SIZE);
+		buf->page_num = page->pagenum;
+		buf->table_id = table_id;
+		buf->is_dirty = 1;
+		buf->is_pinned =1;
+		buf->prevB = buffermgr.firstBuf->prevB;
+		buffermgr.firstBuf->prevB = buf;
+		buf->nextB = buffermgr.firstBuf;
+		buffermgr.firstBuf->is_pinned=0;
+		buf->prevB->is_pinned=0;
+		//buffermgr firstBuf is now buf;
+		buffermgr.firstBuf = buf;
+		buf->is_pinned=0;
+		buffermgr.buf_used++;
 	}
 	else if(buffermgr.buf_used == buffermgr.buf_order){
 		int status =  buffer_write_to_page(); //al
